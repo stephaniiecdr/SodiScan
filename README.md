@@ -1,5 +1,4 @@
 # SodiScan
-**Aplikasi Pemantau Asupan Natrium Harian dari Makanan Kemasan**
 ## 1. Deskripsi Masalah
 Konsumsi natrium (sodium) berlebih merupakan salah satu kontributor utama penyakit tidak menular seperti hipertensi, stroke, dan penyakit kardiovaskular. Organisasi kesehatan dunia merekomendasikan batas asupan natrium harian sebesar **2.000 mg** (setara ±5 gram garam), namun batas ini sangat mudah terlampaui tanpa disadari.
  
