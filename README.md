@@ -1,91 +1,62 @@
 # SodiScan
-## 1. Deskripsi Masalah
-Konsumsi natrium (sodium) berlebih merupakan salah satu kontributor utama penyakit tidak menular seperti hipertensi, stroke, dan penyakit kardiovaskular. Organisasi kesehatan dunia merekomendasikan batas asupan natrium harian sebesar **2.000 mg** (setara ±5 gram garam), namun batas ini sangat mudah terlampaui tanpa disadari.
  
-Masalah utamanya terletak pada **natrium tersembunyi (hidden sodium)** di dalam makanan kemasan/olahan seperti mi instan, makanan ringan (snack), makanan kaleng, saus, dan produk siap saji. Kandungan natrium pada produk-produk ini sering kali:
+## Deskripsi Masalah
  
-- Tidak disadari konsumen karena rasa produk tidak selalu terasa "asin".
-- Tertulis dalam satuan (mg) pada label gizi yang jarang dibaca atau sulit diinterpretasikan secara cepat oleh konsumen awam.
-- Terakumulasi dari beberapa produk berbeda dalam satu hari tanpa ada mekanisme pencatatan yang praktis.
-Akibatnya, banyak pengguna—terutama penderita hipertensi atau kelompok berisiko—tidak memiliki gambaran akurat mengenai total asupan natrium harian mereka, sehingga sulit melakukan kontrol pola makan secara proaktif.
+Konsumsi natrium (garam) berlebih pada makanan kemasan sering kali tidak disadari oleh masyarakat karena informasi kandungan natrium biasanya tercantum dalam label nutrisi yang kecil, menggunakan istilah teknis, dan tidak langsung menunjukkan seberapa besar kontribusinya terhadap batas konsumsi harian. Akibatnya, pengguna kesulitan memantau total asupan natrium dari berbagai produk yang dikonsumsi dalam satu hari, terutama karena perhitungan akumulasi tersebut harus dilakukan secara manual satu per satu.
  
-SodiScan hadir untuk menjembatani kesenjangan ini dengan menyederhanakan proses pembacaan label gizi menjadi satu kali pindai (scan) barcode, lengkap dengan akumulasi otomatis terhadap batas aman harian.
+SodiScan hadir sebagai solusi untuk mempermudah proses ini. Dengan memindai barcode produk makanan kemasan, pengguna dapat langsung mengetahui kandungan natrium dari produk tersebut tanpa perlu mencari atau menghitung sendiri, sekaligus melihat akumulasi konsumsi natrium hariannya dibandingkan dengan batas yang direkomendasikan.
  
----
+## Profil Target Pengguna
  
-## 2. Profil Target Pengguna
-| Segmen Pengguna | Kebutuhan Utama |
+Pengguna utama SodiScan adalah individu yang ingin lebih sadar terhadap konsumsi natrium hariannya dari makanan kemasan, dengan karakteristik sebagai berikut:
+ 
+- Sering mengonsumsi makanan atau minuman kemasan (snack, makanan instan, minuman kemasan, dll).
+- Memiliki kebiasaan berbelanja di minimarket atau supermarket dan ingin mengecek kandungan natrium produk secara cepat sebelum atau saat membeli.
+- Tidak memiliki waktu atau kebiasaan untuk membaca label nutrisi secara detail dan menghitung akumulasinya sendiri.
+- Ingin memiliki gambaran sederhana mengenai posisi konsumsi natrium hariannya, tanpa perlu proses pencatatan yang rumit.
+- Menggunakan aplikasi secara singkat dan cepat, misalnya saat berada di rak makanan di toko atau sesaat setelah mengonsumsi produk kemasan.
+## Manfaat Aplikasi
+ 
+- Mempermudah pengecekan kandungan natrium suatu produk kemasan hanya dengan memindai barcode.
+- Membantu pengguna memantau total konsumsi natrium harian secara otomatis.
+- Memberikan indikator sederhana berbasis warna mengenai posisi konsumsi natrium terhadap batas harian.
+- Membantu pencatatan riwayat konsumsi makanan secara lokal di perangkat pengguna.
+- Tetap menyediakan alternatif input manual ketika produk tidak ditemukan di database atau aplikasi sedang offline.
+## Daftar Fitur Inti
+ 
+| Fitur | Deskripsi |
 |---|---|
-| **Penderita Hipertensi** | Kontrol ketat asupan natrium sesuai anjuran dokter/ahli gizi |
-| **Individu Sadar Kesehatan (Health-Conscious)** | Menjaga pola makan sehat dan preventif terhadap penyakit kardiovaskular |
-| **Lansia dan Keluarga Pendamping** | Membantu memantau konsumsi garam anggota keluarga lanjut usia |
-| **Individu dengan Riwayat Penyakit Ginjal** | Pembatasan natrium sebagai bagian dari terapi diet |
-| **Pengguna Umum yang Sering Konsumsi Makanan Kemasan** | Edukasi dan kesadaran (awareness) terhadap kandungan gizi produk yang dikonsumsi |
+| Barcode Scanner | Memindai barcode produk makanan kemasan menggunakan kamera perangkat. |
+| Open Food Facts API | Mengambil data produk secara real-time berdasarkan barcode yang dipindai. |
+| Informasi Kandungan Natrium | Menampilkan kandungan natrium produk berdasarkan data yang diterima dari API. |
+| Perhitungan Total Natrium Harian | Menjumlahkan seluruh natrium dari produk yang dicatat pengguna dalam satu hari. |
+| Indikator Risiko Berbasis Warna | Menampilkan status konsumsi harian (Aman, Mendekati Batas, Bahaya) berdasarkan akumulasi natrium terhadap batas 2.000 mg/hari. |
+| Riwayat Konsumsi | Menampilkan daftar makanan yang telah dicatat pengguna beserta kandungan natriumnya. |
+| Penyimpanan Lokal (Hive) | Menyimpan seluruh data konsumsi pengguna secara lokal di perangkat tanpa server. |
+| Manual Input Natrium | Memungkinkan pengguna memasukkan nilai natrium secara manual jika produk tidak ditemukan. |
+| Offline/Error Fallback | Menyediakan alur input alternatif saat aplikasi tidak terhubung ke internet atau API gagal merespons. |
  
----
+## Fitur yang Tidak Dikerjakan
  
-## 3. Manfaat Aplikasi
-- **Transparansi Instan** — Pengguna dapat mengetahui kandungan natrium suatu produk hanya dengan memindai barcode, tanpa perlu mencari dan menghitung manual dari label kemasan.
-- **Kontrol Akumulatif Harian** — Aplikasi secara otomatis menjumlahkan total natrium yang telah dikonsumsi dalam satu hari dan membandingkannya dengan batas aman (2.000 mg).
-- **Pengambilan Keputusan Lebih Baik** — Pengguna dapat memutuskan untuk menghindari atau membatasi produk tertentu sebelum dikonsumsi, bukan setelahnya.
-- **Privasi Terjaga** — Karena bersifat *local-first*, seluruh riwayat konsumsi tersimpan hanya di perangkat pengguna tanpa perlu membuat akun atau mengirim data pribadi ke server pihak ketiga.
-- **Akses Offline untuk Data Historis** — Riwayat yang sudah tersimpan tetap dapat diakses tanpa koneksi internet.
-
----
+Bagian ini menjelaskan fitur atau scope yang secara sengaja tidak dikerjakan dalam proyek ini, mengingat keterbatasan waktu pengerjaan selama 12 pertemuan serta fokus pengembangan yang ditetapkan pada aplikasi local-first:
  
-## 4. Daftar Fitur Inti
-Fitur berikut dirancang agar realistis diselesaikan dalam **12 kali pertemuan (±12 minggu)**:
-1. **Scan Barcode Produk**
-   Menggunakan kamera smartphone untuk memindai barcode (EAN/UPC) pada kemasan produk.
-2. **Pengambilan Data Nutrisi via Open Food Facts API**
-   Mengirim kode barcode hasil scan ke Open Food Facts API dan menampilkan data nutrisi (khususnya kandungan natrium) secara real-time.
-3. **Kalkulasi & Visualisasi Batas Harian (2.000 mg)**
-   Menjumlahkan total natrium yang dikonsumsi dalam satu hari dan menampilkan progres (misalnya dalam bentuk progress bar) terhadap batas aman harian.
-4. **Input Manual Produk**
-   Opsi untuk menambahkan data konsumsi secara manual apabila barcode tidak ditemukan di database Open Food Facts.
-5. **Penyimpanan Riwayat Konsumsi Lokal (Hive Database)**
-   Menyimpan setiap entri konsumsi (nama produk, kandungan natrium, waktu, tanggal) ke penyimpanan lokal perangkat.
-6. **Riwayat Harian & Kalender Sederhana**
-   Menampilkan daftar riwayat konsumsi yang dikelompokkan per hari, dengan kemampuan melihat riwayat hari-hari sebelumnya.
-7. **Notifikasi/Peringatan Ambang Batas**
-   Memberikan indikator visual (misalnya warna kuning/merah) ketika akumulasi natrium harian mendekati atau melebihi 2.000 mg.
-8. **Hapus/Edit Entri Konsumsi**
-   Kemampuan dasar CRUD (khususnya *delete* dan *edit*) pada data konsumsi yang sudah tersimpan.
-9. **Halaman Detail Produk**
-   Menampilkan informasi tambahan produk hasil scan (nama, merek, foto produk jika tersedia dari API).
-
----
+- **Autentikasi dan registrasi akun** — tidak diperlukan karena aplikasi berjalan tanpa sistem login.
+- **Backend/server milik sendiri** — seluruh data diproses dan disimpan secara lokal di perangkat pengguna.
+- **Cloud synchronization** — data tidak disinkronkan ke layanan cloud mana pun.
+- **Integrasi database online untuk data pengguna** — penyimpanan data pengguna sepenuhnya menggunakan Hive secara lokal.
+- **Sistem rekomendasi makanan berbasis AI** — di luar scope karena membutuhkan kompleksitas pengembangan yang tidak sesuai dengan waktu pengerjaan.
+- **Diagnosis atau rekomendasi medis** — aplikasi hanya menampilkan informasi natrium, bukan saran kesehatan atau diagnosis.
+- **Integrasi dengan perangkat wearable** — tidak termasuk dalam kebutuhan dasar proyek.
+- **Notifikasi kesehatan yang kompleks** — hanya indikator visual sederhana yang dikerjakan, bukan sistem notifikasi bertingkat.
+- **Fitur sosial antar pengguna** — aplikasi difokuskan sebagai alat pemantauan pribadi, bukan platform sosial.
+## Kriteria Aplikasi Dinyatakan Berhasil
  
-## 5. Fitur yang Tidak Dikerjakan (Out of Scope)
-Untuk menjaga agar proyek tetap realistis diselesaikan dalam 12 pertemuan, fitur-fitur berikut **secara sengaja tidak dikerjakan** pada versi ini:
- 
-- **Sistem Login/Register & Manajemen Akun Pengguna**
-- **Sinkronisasi Cloud / Backup Otomatis ke Server**
-- **Backend/Server Mandiri** (aplikasi hanya mengonsumsi Open Food Facts API sebagai *read-only* service)
-- **Kalkulasi Nutrisi Lain** (kalori, gula, lemak, protein, dll) — fokus aplikasi hanya pada natrium
-- **Rekomendasi Produk Alternatif Berbasis AI/Machine Learning**
-- **Fitur Sosial** (berbagi riwayat, komunitas, leaderboard, dsb.)
-- **Multi-platform Sinkronisasi Lintas Perangkat**
-- **Integrasi dengan Perangkat Wearable/Kesehatan (Smartwatch, dsb.)**
-- **Mode Multi-bahasa (Localization) di luar Bahasa Indonesia/Inggris dasar**
-- **Kontribusi Data Balik ke Open Food Facts (Crowdsourcing Input)**
-
----
- 
-## 6. Kriteria Aplikasi Dinyatakan Berhasil
-### Kriteria Fungsional
-- Aplikasi berhasil membaca barcode produk menggunakan kamera dengan tingkat keberhasilan yang wajar pada kondisi pencahayaan normal.
-- Data nutrisi (khususnya natrium) berhasil diambil dari Open Food Facts API dan ditampilkan ke pengguna dalam waktu respons yang wajar.
-- Sistem mampu menjumlahkan total konsumsi natrium harian secara akurat berdasarkan seluruh entri pada tanggal tersebut.
-- Pengguna dapat menambahkan data secara manual ketika produk tidak ditemukan di database API.
-- Seluruh data konsumsi tersimpan secara persisten di Hive Database dan tetap dapat diakses setelah aplikasi ditutup/dibuka kembali (termasuk dalam kondisi offline).
-- Pengguna dapat melihat, mengedit, dan menghapus riwayat konsumsi yang telah tercatat.
-### Kriteria Teknis
-- Aplikasi berjalan stabil (tanpa *crash*) pada alur utama: scan → ambil data → simpan → lihat riwayat.
-- Tidak terjadi kebocoran memori atau *lag* signifikan saat proses scanning berlangsung.
-- Aplikasi tetap dapat menampilkan riwayat data lama meskipun tidak ada koneksi internet (local-first).
-- Struktur kode terorganisir dengan pemisahan yang jelas antara UI, logika bisnis, dan lapisan data (data layer).
-### Kriteria Non-Fungsional
-- Antarmuka pengguna (UI) sederhana dan mudah dipahami tanpa memerlukan proses onboarding yang rumit.
-- Proses scan hingga tampilnya data nutrisi berlangsung dalam waktu yang terasa responsif bagi pengguna.
-- Aplikasi tidak memerlukan proses pendaftaran akun untuk dapat langsung digunakan (zero-friction onboarding).
+- Pengguna dapat memindai barcode produk menggunakan kamera perangkat.
+- Aplikasi dapat mengambil data produk dari Open Food Facts API ketika data tersedia dan koneksi internet aktif.
+- Kandungan natrium produk dapat ditampilkan dengan benar berdasarkan data yang diterima dari API.
+- Pengguna dapat mencatat konsumsi makanan ke dalam riwayat aplikasi.
+- Total natrium harian dapat dihitung secara otomatis dari makanan yang dicatat.
+- Indikator warna berubah sesuai dengan total natrium harian (Aman, Mendekati Batas, Bahaya).
+- Data riwayat konsumsi tetap tersimpan dan dapat ditampilkan kembali setelah aplikasi ditutup dan dibuka ulang.
+- Pengguna tetap dapat memasukkan natrium secara manual ketika produk tidak ditemukan di API atau aplikasi sedang offline.
+- Aplikasi dapat digunakan sepenuhnya tanpa akun, dengan seluruh data utama pengguna tersimpan secara lokal di perangkat.
