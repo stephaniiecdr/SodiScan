@@ -4,7 +4,7 @@ Bangun sebuah aplikasi mobile sederhana bernama **SodiScan**.
 ## Tujuan
 Membantu pengguna memantau konsumsi natrium harian dari makanan kemasan. Pengguna memindai barcode produk, aplikasi mengambil data produk dari Open Food Facts, lalu pengguna mencatat konsumsinya. Aplikasi menjumlahkan natrium harian, membandingkannya dengan batas 2.000 mg/hari, dan menampilkan status risiko. Semua data disimpan secara lokal di perangkat.
  
-## Gunakan stack berikut
+## Menggunakan stack berikut
 * Mobile: Flutter + Dart
 * State management: Provider
 * Penyimpanan lokal: Hive + hive_flutter
