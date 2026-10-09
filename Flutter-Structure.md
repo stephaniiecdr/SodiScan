@@ -1,464 +1,492 @@
-# Flutter Project Structure & Implementation Guide
+# Flutter Structure — SodiScan
 
-Dokumen ini menjelaskan bagaimana konsep Flutter (prototype, struktur proyek, routing, reusable widget, model, service/API) diterapkan pada SodiScan.
+Dokumen ini menjelaskan bagaimana aplikasi Flutter SodiScan diorganisasikan: prototype, struktur proyek, screen, routing, reusable widget, model, data source, dan state management. Latar belakang masalah dan fitur aplikasi ada di [`README.md`](README.md). Spesifikasi teknis lengkap ada di [`Architecture.md`](Architecture.md).
 
-Saat dokumen ini ditulis, repository belum berisi source code Flutter. Acuannya adalah [`Architecture.md`](Architecture.md) dan [`README.md`](README.md). Setiap bagian diberi label:
+## Status Dokumen
 
-- **[Ditetapkan]**: tertulis di `Architecture.md` atau `README.md`.
-- **[Rekomendasi struktur]**: belum ditetapkan dan belum diimplementasikan. Ini usulan, termasuk semua nama file yang tidak disebut di spesifikasi.
+Saat dokumen ini ditulis, repository **belum berisi source code Flutter** (belum ada folder `lib/` maupun `pubspec.yaml`). Karena itu, seluruh struktur di bawah adalah rencana. Setiap bagian diberi salah satu label berikut:
 
-Setelah source code dibuat, dokumen ini perlu diperbarui agar nama file dan class sesuai dengan implementasi aktual.
+| Label | Arti |
+|---|---|
+| **Status: Recommended (Architecture.md)** | Belum diimplementasikan, tetapi sudah ditetapkan di `Architecture.md` (stack, entity, use case, halaman, struktur folder) |
+| **Status: Recommended (usulan)** | Belum diimplementasikan dan belum ditetapkan; merupakan usulan dokumen ini, misalnya nama file atau pembagian provider |
+| **Status: Implemented** | Sudah ada di source code. Saat ini belum ada bagian dengan status ini |
 
-## Pemetaan dengan Contoh Struktur Umum
+Setelah source code dibuat, dokumen ini perlu diperbarui agar sesuai dengan implementasi aktual.
 
-Contoh struktur Flutter yang umum (`screens/`, `widgets/`, `models/`, `services/`, `routes/`, dengan halaman Login dan Profile) bersifat generik. Tabel berikut menunjukkan padanannya di SodiScan.
+### Perbandingan dengan contoh struktur umum
 
-| Konsep | Contoh umum | Padanan di SodiScan |
+Contoh struktur Flutter yang umum (`routes/`, `screens/`, `widgets/`, `models/`, `services/`, dengan halaman Login dan Profile) dipakai sebagai acuan cara menjelaskan. Penerapannya di SodiScan disesuaikan sebagai berikut:
+
+| Contoh umum | Di SodiScan | Alasan |
 |---|---|---|
-| Prototype | Login, Dashboard, Detail, Profile | Beranda, Pindai Barcode, Detail Produk, Input Manual, Riwayat ([bagian 1](#1-prototype)) |
-| Struktur proyek | Folder datar `screens/`, `widgets/`, dst. | Dikelompokkan per layer; `screens/` dan `widgets/` berada di `presentation/` ([bagian 2](#2-project-structure)) |
-| Routing | `routes/app_routes.dart` | `Navigator` bawaan, opsional named routes ([bagian 6](#6-routing)) |
-| Reusable widget | `primary_button.dart`, `app_text_field.dart` | `primary_button.dart`, `risk_status_badge.dart`, `sodium_summary_card.dart`, dst. ([bagian 5](#5-reusable-widgets--components)) |
-| Model | `models/user_model.dart` | `data/models/` dan `domain/entities/` ([bagian 7](#7-models)) |
-| Service/API | `services/auth_service.dart` | `data/datasources/remote` dan `local`, ditambah repository ([bagian 8](#8-services--data-sources) dan [9](#9-repository)) |
-
-Bagian yang sengaja tidak dipakai:
-
-- **Login, Profile, dan `auth_service`**: SodiScan berjalan tanpa akun dan autentikasi (lihat README, *Fitur yang Tidak Dikerjakan*).
-- **Folder `services/`**: perannya digantikan oleh data source dan repository sesuai Clean Architecture di `Architecture.md`.
-- **Folder `routes/`**: tidak ada di struktur yang ditetapkan. Jika ingin route terpusat, konstanta nama route diletakkan di `core/constants/`.
+| `login_screen`, `profile_screen` | Tidak ada | Aplikasi tanpa akun dan autentikasi |
+| `dashboard_screen` | Beranda (`home/`) | Menampilkan total natrium dan status harian |
+| `routes/app_routes.dart` | `Navigator` bawaan | Tidak ada package routing di stack yang ditetapkan |
+| `screens/`, `widgets/` | `presentation/screens/`, `presentation/widgets/` | Dikelompokkan per layer (Clean Architecture) |
+| `models/user_model.dart` | `data/models/` + `domain/entities/` | Tidak ada data user; data utamanya produk dan konsumsi |
+| `services/auth_service.dart` | `data/datasources/` + repository | Peran service dijalankan oleh data source (API dan Hive) |
 
 ## 1. Prototype
 
-Prototype adalah rancangan awal UI/UX SodiScan. Tujuannya menguji tata letak, isi layar, dan alur pengguna sebelum logika aplikasi selesai dibuat. Prototype bisa berupa:
+**Status: Recommended (Architecture.md)**
 
-- **Wireframe**: sketsa kotak-kotak tanpa warna, cukup untuk menyepakati isi tiap halaman.
-- **Figma / mock UI**: tampilan lengkap dengan warna, tipografi, dan alur klik antar-halaman.
-- **Prototype UI Flutter**: screen Flutter dengan data dummy, tanpa Provider, API, atau Hive.
+Prototype adalah rancangan awal UI/UX sebelum logika aplikasi dibuat. Saat ini belum ada desain Figma di repository. Prototype SodiScan direncanakan sebagai **mock UI Flutter**, yaitu screen Flutter dengan data dummy tanpa Provider, API, atau Hive. Screen-screen ini kemudian dihubungkan ke state management secara bertahap.
 
-**[Ditetapkan]** Halaman yang perlu diprototipekan hanya lima halaman berikut (`Architecture.md` → *Halaman aplikasi*):
+Lima screen yang dirancang (sesuai *Halaman aplikasi* di `Architecture.md`):
 
-| Halaman | Isi utama di prototype |
-|---|---|
-| Beranda | Total natrium hari ini vs 2.000 mg, badge status, daftar konsumsi hari ini, tombol `Pindai Barcode` dan `Input Manual` |
-| Pindai Barcode | Preview kamera, indikator loading, tombol `Input Manual` |
-| Detail Produk | Nama, merek, takaran saji, natrium, field porsi/berat, tombol `Simpan Konsumsi` |
-| Input Manual | Form nama produk dan natrium (mg), tombol `Simpan Konsumsi` |
-| Riwayat | Daftar konsumsi per tanggal, beserta total dan status per tanggal |
+| Screen | Tujuan | Informasi utama | Interaksi pengguna | Fitur terkait |
+|---|---|---|---|---|
+| Beranda | Memantau natrium hari ini | Total natrium vs batas 2.000 mg, badge status, daftar konsumsi hari ini | Tap `Pindai Barcode`, `Input Manual`, buka Riwayat | Total harian, status risiko |
+| Pindai Barcode | Membaca barcode produk | Preview kamera, loading saat mencari | Arahkan kamera ke barcode; tap `Input Manual` | Barcode scanner, Open Food Facts |
+| Detail Produk | Konfirmasi produk sebelum dicatat | Nama, merek, takaran saji, natrium, hasil hitung | Isi jumlah porsi/berat; tap `Simpan Konsumsi` | Informasi natrium, pencatatan konsumsi |
+| Input Manual | Fallback jika produk tidak ditemukan atau offline | Form nama produk dan natrium (mg) | Isi form; tap `Simpan Konsumsi` | Manual input, offline fallback |
+| Riwayat | Melihat konsumsi sebelumnya | Daftar per tanggal, total dan status per tanggal | Scroll daftar | Riwayat konsumsi |
 
-**Profile tidak termasuk.** Aplikasi tidak punya akun atau autentikasi, jadi halaman profil tidak diperlukan.
+Aturan tampilan yang perlu tercermin di prototype:
 
-Beberapa aturan UI juga sudah ditetapkan dan sebaiknya langsung tercermin di prototype:
-
-- Semua label dalam Bahasa Indonesia.
+- Semua teks dalam Bahasa Indonesia.
 - Memakai kartu, badge, form, dan empty state.
-- Ada state loading, kosong, dan error.
-- Warna badge: Aman hijau, Mendekati Batas oranye, Bahaya merah.
+- Setiap halaman yang memuat data punya state loading, kosong, dan error.
+- Warna badge: Aman = hijau, Mendekati Batas = oranye, Bahaya = merah.
 - Tidak ada chart di versi pertama.
-
-Belum ada file Figma di repo. Jika nanti ada, desain Figma menjadi acuan tampilan, sedangkan `Architecture.md` tetap menjadi acuan fungsi.
 
 ## 2. Project Structure
 
-**[Ditetapkan]** Struktur dari `Architecture.md`:
+**Status: Recommended (Architecture.md)**
+
+SodiScan memakai Clean Architecture dengan empat bagian utama di `lib/`:
 
 ```text
 lib/
-  core/
-  data/
-    datasources/
-      local/
-      remote/
-    models/
-    repositories/
-  domain/
-    entities/
-    repositories/
-    usecases/
-  presentation/
-    providers/
-    screens/
-    widgets/
-  main.dart
+├── main.dart
+├── core/
+├── data/
+│   ├── datasources/
+│   │   ├── local/
+│   │   └── remote/
+│   ├── models/
+│   └── repositories/
+├── domain/
+│   ├── entities/
+│   ├── repositories/
+│   └── usecases/
+└── presentation/
+    ├── providers/
+    ├── screens/
+    └── widgets/
 ```
 
-| Folder | Tanggung jawab di SodiScan |
-|---|---|
-| `core/` | Hal lintas layer: konstanta (batas 2.000 mg, ambang 1.500 mg, URL API, timeout 10 detik), tipe error/failure, dan utilitas kecil seperti format tanggal |
-| `data/datasources/remote/` | Komunikasi HTTP dengan Open Food Facts (package `http`) |
-| `data/datasources/local/` | Baca/tulis Hive box `consumptions` |
-| `data/models/` | Bentuk data untuk JSON API dan penyimpanan Hive |
-| `data/repositories/` | Implementasi repository: memanggil data source dan mengubah model menjadi entity |
-| `domain/entities/` | Konsep bisnis murni: `Product`, `FoodConsumption`, `DailyNutrition` |
-| `domain/repositories/` | Kontrak (abstract class) repository |
-| `domain/usecases/` | Satu aksi bisnis per class |
-| `presentation/providers/` | State management (Provider) yang memanggil use case |
-| `presentation/screens/` | Halaman |
-| `presentation/widgets/` | Komponen UI yang dipakai berulang |
+| Folder | Isi | Contoh di SodiScan |
+|---|---|---|
+| `core/` | Komponen umum yang dipakai lintas bagian | Konstanta (batas 2.000 mg, ambang 1.500 mg, URL API, timeout 10 detik), tipe error, utilitas format tanggal |
+| `data/` | Sumber data dan implementasi repository | Akses Open Food Facts, akses Hive, model JSON/Hive |
+| `domain/` | Aturan bisnis, tidak bergantung pada Flutter, Hive, atau `http` | Entity, kontrak repository, use case, aturan status risiko |
+| `presentation/` | Semua yang berhubungan dengan UI | Screen, widget, provider |
 
-Alasan pemisahannya, sesuai aturan di `Architecture.md`:
+Alasan pemisahan:
 
-- Domain tidak boleh bergantung pada Flutter, Hive, atau `http`. Aturan risiko dan perhitungan natrium jadi bisa di-unit-test tanpa emulator, dan unit test ini memang termasuk deliverable.
-- Presentation tidak boleh mengimpor model data, JSON, atau Hive. Kalau sumber data berubah, UI tidak perlu ikut diubah.
-
-Struktur ini sudah cukup untuk lima halaman dan empat use case. Tidak perlu menambah layer lain.
+- **Domain bebas dari Flutter dan library luar.** Perhitungan natrium dan status risiko bisa di-unit-test tanpa emulator.
+- **Presentation tidak mengenal sumber data.** UI tidak perlu berubah jika cara mengambil data berubah.
+- **Tanggung jawab jelas.** Setiap folder punya satu peran, sehingga mudah dicari dan dikerjakan bersama.
 
 ## 3. Main Entry Point
 
-**`lib/main.dart` [Ditetapkan sebagai satu-satunya file di root `lib/`]**
+### `lib/main.dart`
 
-Alur kerja `main.dart` secara konseptual:
+**Status: Recommended (Architecture.md)**
+
+`main.dart` adalah titik awal aplikasi:
 
 ```text
 main()
- ↓
+  ↓
 WidgetsFlutterBinding.ensureInitialized()
- ↓
-Hive.initFlutter() + register adapter + buka box "consumptions"
- ↓
-Rakit dependency: DataSource → RepositoryImpl → UseCase
- ↓
-runApp( MultiProvider( providers: [...], child: MaterialApp(...) ) )
+  ↓
+Inisialisasi Hive (hive_flutter) dan buka box "consumptions"
+  ↓
+Siapkan dependency: DataSource → RepositoryImpl → UseCase
+  ↓
+Daftarkan Provider (MultiProvider)
+  ↓
+runApp()
 ```
 
-**`lib/app.dart` [Rekomendasi struktur, opsional]**
+### `lib/app.dart`
 
-`Architecture.md` tidak mencantumkan `app.dart`, jadi file ini tidak wajib. File ini baru berguna kalau `main.dart` mulai terlalu panjang. Isinya nanti:
+**Status: Recommended (usulan, opsional)**
 
-- widget root (`MaterialApp`);
-- theme, termasuk warna status;
-- konfigurasi route;
-- `MultiProvider`.
+`app.dart` tidak tercantum di `Architecture.md`. File ini disarankan jika `main.dart` mulai terlalu panjang. Isinya:
 
-Dengan begitu `main.dart` hanya berisi inisialisasi. Kalau `main.dart` masih ringkas, cukup satu file saja.
+- root widget (`MaterialApp`);
+- theme aplikasi, termasuk warna status risiko;
+- halaman awal dan konfigurasi navigasi;
+- konfigurasi global seperti judul aplikasi dan locale.
+
+Jika tidak dipakai, isi tersebut tetap berada di `main.dart`.
 
 ## 4. Screens / Pages
 
-Screen adalah widget setingkat halaman yang dibuka lewat navigasi. Screen hanya menampilkan state dari Provider dan meneruskan aksi pengguna ke Provider. Screen tidak boleh melakukan HTTP request atau mengakses Hive.
-
-**[Ditetapkan]** Lima halaman. **[Rekomendasi struktur]** Susunan folder:
+**Status: Recommended (Architecture.md** untuk daftar screen; **usulan** untuk nama folder/file**)**
 
 ```text
-presentation/screens/
-  home/            home_screen.dart
-  scanner/         scanner_screen.dart
-  product_detail/  product_detail_screen.dart
-  manual_input/    manual_input_screen.dart
-  history/         history_screen.dart
+presentation/
+└── screens/
+    ├── home/             home_screen.dart
+    ├── scanner/          scanner_screen.dart
+    ├── product_detail/   product_detail_screen.dart
+    ├── manual_input/     manual_input_screen.dart
+    └── history/          history_screen.dart
 ```
 
-| Screen | Tujuan | Informasi yang ditampilkan | Input / aksi | State yang dipakai | Navigasi |
-|---|---|---|---|---|---|
-| **Beranda** | Ringkasan hari ini | Total natrium, batas 2.000 mg, badge status, daftar konsumsi hari ini | Tap `Pindai Barcode` atau `Input Manual`, buka Riwayat | Ringkasan harian (loading, kosong, data) dari data lokal saja, tanpa API | → Pindai, → Input Manual, → Riwayat |
-| **Pindai Barcode** | Membaca barcode dengan `mobile_scanner` | Preview kamera, loading saat mencari | Arahkan kamera; tap `Input Manual` | Status pencarian (idle, loading, error); deteksi dihentikan selama pencarian | Berhasil → Detail Produk; gagal → pesan lalu tawaran Input Manual |
-| **Detail Produk** | Konfirmasi produk dan hitung natrium | Nama, merek, takaran saji, natrium per saji / per 100 g, hasil hitung | Isi jumlah porsi (atau gram jika hanya ada data per 100 g); `Simpan Konsumsi` | Produk terpilih, hasil hitung, status simpan | Setelah simpan → kembali ke Beranda |
-| **Input Manual** | Fallback saat produk tidak ada, data natrium kosong, offline, atau API gagal | Form | Nama produk, natrium (mg, harus > 0); `Simpan Konsumsi` | Validasi form, status simpan | Setelah simpan → kembali ke Beranda |
-| **Riwayat** | Melihat konsumsi lampau | Daftar per tanggal, total dan status per tanggal | Scroll | Riwayat (loading, kosong, data) dari Hive | ← kembali |
+| Screen | Responsibility | Main Interaction | Sumber data |
+|---|---|---|---|
+| Home (Beranda) | Monitoring natrium harian | Melihat total dan status; membuka Scanner, Input Manual, Riwayat | Lokal (Hive), tanpa API |
+| Scanner (Pindai Barcode) | Membaca barcode dengan `mobile_scanner` | Scan produk; berpindah ke Input Manual | Open Food Facts lewat provider |
+| Product Detail | Menampilkan informasi produk dan menghitung natrium | Isi porsi/berat, konfirmasi `Simpan Konsumsi` | Produk hasil scan |
+| Manual Input | Mencatat natrium secara manual | Isi nama produk dan natrium (> 0 mg), simpan | Lokal (Hive) |
+| History (Riwayat) | Menampilkan konsumsi per tanggal | Melihat konsumsi sebelumnya | Lokal (Hive) |
 
-Halaman "Detail Konsumsi" dari Riwayat tidak ada di spesifikasi, jadi tidak perlu dibuat.
+Prinsip screen: screen hanya menampilkan state dari provider dan meneruskan aksi pengguna. Screen tidak melakukan HTTP request, tidak mengakses Hive, dan tidak menghitung status risiko.
 
-## 5. Reusable Widgets / Components
+## 5. Routing / Navigation
 
-Reusable widget adalah komponen UI yang muncul di lebih dari satu tempat, sehingga tampilan dan perilakunya cukup ditulis sekali.
+**Status: Recommended (usulan)**, mengikuti batasan di `Architecture.md` (tidak ada package routing)
 
-**[Rekomendasi struktur]** Kandidat yang benar-benar muncul berulang di SodiScan:
+SodiScan cukup memakai **`Navigator` bawaan Flutter**. Tidak ada `go_router` atau package routing lain, dan folder `routes/` tidak diperlukan.
+
+```mermaid
+flowchart LR
+    Home[Beranda] --> Scanner[Pindai Barcode]
+    Home --> Manual[Input Manual]
+    Home --> History[Riwayat]
+    Scanner -- produk ditemukan --> Detail[Detail Produk]
+    Scanner -- gagal / offline --> Manual
+    Detail -- Simpan Konsumsi --> Home
+    Manual -- Simpan Konsumsi --> Home
+```
+
+| Aspek | Cara di SodiScan |
+|---|---|
+| Definisi route | Langsung dengan `Navigator.push(MaterialPageRoute(...))`. Alternatifnya named routes di `MaterialApp(routes: ...)` dengan konstanta nama route di `core/constants/` |
+| Memanggil screen | Tombol di Beranda membuka Scanner, Input Manual, atau Riwayat |
+| Route parameter | Detail Produk menerima entity `Product` lewat constructor. Screen lain tidak butuh parameter |
+| Kembali (back) | Tombol back bawaan untuk kembali satu halaman. Setelah `Simpan Konsumsi`, kembali ke Beranda dengan `Navigator.popUntil(context, (route) => route.isFirst)` |
+
+## 6. Reusable Components / Widgets
+
+**Status: Recommended (usulan)**
+
+Widget dibuat reusable hanya jika memang muncul di lebih dari satu screen atau tampilannya harus konsisten.
 
 ```text
-presentation/widgets/
-  risk_status_badge.dart     Beranda + Riwayat (per tanggal)
-  sodium_summary_card.dart   Beranda + header grup tanggal di Riwayat
-  consumption_tile.dart      daftar konsumsi di Beranda + Riwayat
-  primary_button.dart        "Simpan Konsumsi", "Pindai Barcode", "Input Manual"
-  empty_state.dart           Beranda kosong, Riwayat kosong
-  error_state.dart           error pencarian produk, gagal memuat data
+presentation/
+└── widgets/
+    ├── primary_button.dart
+    ├── sodium_summary_card.dart
+    ├── risk_status_badge.dart
+    ├── consumption_tile.dart
+    ├── empty_state.dart
+    └── error_state.dart
 ```
 
-Catatan:
+| Widget | Fungsi | Digunakan di | Alasan reusable |
+|---|---|---|---|
+| `PrimaryButton` | Tombol aksi utama | Beranda, Scanner, Detail Produk, Input Manual | Gaya tombol seragam |
+| `SodiumSummaryCard` | Total natrium vs batas 2.000 mg + badge | Beranda, header per tanggal di Riwayat | Ringkasan yang sama muncul di dua tempat |
+| `RiskStatusBadge` | Badge Aman / Mendekati Batas / Bahaya | Beranda, Riwayat | Warna hijau/oranye/merah harus konsisten |
+| `ConsumptionTile` | Satu baris konsumsi (nama, natrium, waktu) | Beranda, Riwayat | Item daftar yang sama |
+| `EmptyState` | Pesan saat data kosong | Beranda, Riwayat | Pola kosong yang sama |
+| `ErrorState` | Pesan error + aksi lanjutan | Scanner, Beranda, Riwayat | Pola error yang sama |
 
-- `RiskStatusBadge` paling penting dibuat reusable karena warna hijau/oranye/merah harus konsisten di semua tempat. Widget ini hanya menampilkan status. Penentuan statusnya ada di domain.
-- `ProductCard` tidak perlu dijadikan reusable. Informasi produk hanya tampil di Detail Produk.
-- `AppTextField` baru layak dibuat kalau styling field di Input Manual dan Detail Produk memang sama. Kalau berbeda, pakai `TextFormField` langsung.
-- Untuk loading, `CircularProgressIndicator` bawaan biasanya cukup. Wrapper khusus tidak diperlukan.
+Yang **tidak** perlu dijadikan reusable:
 
-## 6. Routing
+- **`ProductCard`**: informasi produk hanya tampil di Detail Produk.
+- **`AppTextField`**: cukup `TextFormField` biasa, kecuali styling field di Detail Produk dan Input Manual memang dibuat sama.
+- **Loading indicator**: `CircularProgressIndicator` bawaan sudah cukup.
 
-Routing mengatur perpindahan antar-screen.
+`RiskStatusBadge` hanya menampilkan status. Penentuan status (aman, mendekati batas, bahaya) dilakukan di domain, bukan di widget.
 
-**[Ditetapkan]** `Architecture.md` tidak mencantumkan package routing (misalnya `go_router`). Karena itu gunakan **`Navigator` bawaan Flutter** dan jangan menambah package routing.
+## 7. Models and Data Representation
 
-Alur utama:
+### Entity
 
-```text
-Beranda
- ├─→ Pindai Barcode ─(produk ditemukan)→ Detail Produk ─(Simpan)→ Beranda
- │         └─(tidak ditemukan / offline / error)→ Input Manual ─(Simpan)→ Beranda
- ├─→ Input Manual ─(Simpan)→ Beranda
- └─→ Riwayat
-```
+**Status: Recommended (Architecture.md)**
 
-**[Rekomendasi struktur]** Pilih salah satu cara:
-
-- `Navigator.push(MaterialPageRoute(...))` langsung. Ini paling sederhana dan cukup untuk lima halaman. Data `Product` dikirim ke Detail Produk lewat constructor.
-- Named routes di `MaterialApp(routes: ...)`, dengan konstanta nama route di `core/constants/`. Pilih cara ini kalau ingin daftar route terpusat. Folder `lib/routes/` tidak perlu dibuat karena tidak ada di struktur yang ditetapkan.
-
-Setelah simpan, kembali ke Beranda dengan `Navigator.popUntil(context, (r) => r.isFirst)`. Beranda lalu memuat ulang ringkasan dari Provider.
-
-## 7. Models
-
-**Entity [Ditetapkan]** di `domain/entities/`, didefinisikan sekali saja:
+Entity berada di `domain/entities/` dan mewakili konsep bisnis tanpa ketergantungan pada Flutter, Hive, atau JSON.
 
 | Entity | Field |
 |---|---|
 | `Product` | barcode, name, brand, servingSize, sodiumPer100gMg, sodiumPerServingMg |
 | `FoodConsumption` | id, barcode, productName, sodiumMg, source, consumedAt |
 | `DailyNutrition` | date, totalSodiumMg, dailyLimitMg, riskStatus |
+| `RiskStatus` (enum) | `safe`, `nearLimit`, `danger` |
 
-`riskStatus` memiliki tiga nilai: `safe`, `nearLimit`, `danger`. **[Rekomendasi struktur]** Nilai ini dijadikan enum `RiskStatus` di domain. `source` (hasil scan atau manual) juga sebaiknya berupa enum. Nama enum-nya belum ditetapkan.
+Nilai `riskStatus` ditetapkan di `Architecture.md`. Menjadikannya enum bernama `RiskStatus` adalah usulan.
 
-**Model [Rekomendasi nama file]** di `data/models/`:
+### Model
 
-```text
-data/models/
-  product_model.dart            parsing JSON Open Food Facts → Product
-  food_consumption_model.dart   bentuk data di Hive ↔ FoodConsumption
-```
+**Status: Recommended (usulan** untuk nama file**)**
 
-Perbedaannya:
-
-- **Model** mengurus bentuk data teknis: `fromJson`, konversi natrium gram × 1.000 → mg, dan adapter/serialisasi Hive. Model hanya dipakai di layer data.
-- **Entity** mewakili konsep bisnis tanpa `import` Flutter, Hive, atau `http`. Entity dipakai di domain dan presentation.
-
-**Tidak ada `daily_nutrition_model.dart`.** Menurut aturan yang ditetapkan, `DailyNutrition` tidak disimpan. Nilainya dihitung dari `FoodConsumption` pada tanggal yang sama, jadi entity-nya saja sudah cukup.
-
-## 8. Services / Data Sources
-
-SodiScan tidak memakai folder `services/` generik. Tidak ada `auth_service.dart` karena tidak ada autentikasi. Peran "service" dijalankan oleh data source.
-
-**[Rekomendasi nama file]**
+Model berada di `data/models/` dan mengurus bentuk data teknis:
 
 ```text
-data/datasources/
-  remote/open_food_facts_remote_data_source.dart
-  local/consumption_local_data_source.dart
+data/
+└── models/
+    ├── product_model.dart            JSON Open Food Facts → Product
+    └── food_consumption_model.dart   data Hive ↔ FoodConsumption
 ```
 
-**Remote data source [perilaku Ditetapkan]**
+| | Model | Entity |
+|---|---|---|
+| Lokasi | `data/models/` | `domain/entities/` |
+| Tugas | Parsing JSON, konversi natrium g × 1.000 → mg, serialisasi Hive | Mewakili konsep bisnis |
+| Dipakai oleh | Data source dan repository | Use case, provider, screen |
 
-- Memanggil Open Food Facts API v2 berdasarkan barcode dengan package `http`.
-- Batas waktu request 10 detik.
-- Mengembalikan `ProductModel`, atau melempar error yang jelas: produk tidak ditemukan, data natrium kosong, tidak ada internet, atau API gagal. Tipe error sebaiknya ada di `core/errors/`.
-- Hanya membaca dari API. Data konsumsi pengguna tidak pernah dikirim.
+Tidak ada `daily_nutrition_model.dart`. Menurut `Architecture.md`, `DailyNutrition` tidak disimpan, tetapi dihitung dari `FoodConsumption` pada tanggal yang sama.
 
-**Local data source [perilaku Ditetapkan]**
+## 8. Data Sources / Services
 
-- Satu-satunya tempat yang menyentuh Hive box `consumptions`.
-- Operasinya: simpan konsumsi, ambil konsumsi per tanggal, ambil semua konsumsi untuk riwayat.
-- Menyimpan `productName` dan `sodiumMg` langsung, supaya riwayat tetap tampil saat offline.
+**Status: Recommended (Architecture.md** untuk perilaku; **usulan** untuk nama file**)**
 
-UI dan Provider tidak boleh memanggil kedua data source ini secara langsung.
+SodiScan tidak memakai folder `services/` generik. Peran service dijalankan oleh dua data source:
+
+```text
+data/
+└── datasources/
+    ├── remote/
+    │   └── open_food_facts_remote_data_source.dart
+    └── local/
+        └── consumption_local_data_source.dart
+```
+
+| Data source | Tanggung jawab |
+|---|---|
+| **Remote**: Open Food Facts | Request ke Open Food Facts API v2 berdasarkan barcode memakai `http`, timeout 10 detik, parsing response menjadi `ProductModel`, melempar error yang jelas (produk tidak ditemukan, natrium kosong, offline, API gagal). Hanya membaca; data pengguna tidak pernah dikirim |
+| **Local**: Hive | Menyimpan dan membaca `FoodConsumption` di Hive box `consumptions`, mengambil data per tanggal dan seluruh riwayat. Satu-satunya tempat yang menyentuh Hive |
+
+Aturan penting: UI dan provider tidak boleh melakukan API request atau mengakses Hive secara langsung.
 
 ## 9. Repository
 
-Repository menjadi perantara antara domain dan data. Domain hanya mengenal kontraknya dan tidak tahu datanya berasal dari HTTP atau Hive.
+**Status: Recommended (Architecture.md** untuk pola repository; **usulan** untuk nama file**)**
 
-**[Rekomendasi nama file]**
-
-```text
-domain/repositories/
-  product_repository.dart          contoh: getProductByBarcode(barcode)
-  consumption_repository.dart      contoh: save, getByDate, getAll
-
-data/repositories/
-  product_repository_impl.dart     → remote data source
-  consumption_repository_impl.dart → local data source
-```
-
-Alurnya:
+Repository adalah perantara antara domain dan sumber data. Domain hanya mengenal kontraknya (interface), tanpa tahu data berasal dari API atau Hive.
 
 ```text
-Provider → Use Case → Repository (interface, domain)
-                         ↓ diimplementasikan oleh
-                     RepositoryImpl (data) → Remote / Local Data Source
+domain/
+└── repositories/
+    ├── product_repository.dart          kontrak: getProductByBarcode
+    └── consumption_repository.dart      kontrak: simpan, ambil per tanggal, ambil semua
+
+data/
+└── repositories/
+    ├── product_repository_impl.dart     → remote data source
+    └── consumption_repository_impl.dart → local data source
 ```
-
-**[Ditetapkan]** Repository mengubah model menjadi entity sebelum mengembalikannya ke use case. Repository juga bisa menerjemahkan exception teknis (misalnya `SocketException` atau `TimeoutException`) menjadi failure dari `core/errors/` yang dimengerti domain dan UI.
-
-## 10. Use Cases
-
-**[Ditetapkan]** Hanya empat use case yang dibutuhkan:
 
 ```text
-domain/usecases/
-  get_product_by_barcode.dart     GetProductByBarcode
-  record_consumption.dart         RecordConsumption
-  get_daily_summary.dart          GetDailySummary
-  get_consumption_history.dart    GetConsumptionHistory
+Screen
+  ↓
+Provider (state management)
+  ↓
+Use Case
+  ↓
+Repository (interface, domain)
+  ↓
+Repository Impl (data)
+  ↓
+Data Source (Open Food Facts / Hive)
 ```
 
-Nama class ditetapkan. Nama file mengikuti konvensi snake_case dan termasuk **Rekomendasi struktur**.
+Repository juga mengubah model menjadi entity, dan menerjemahkan error teknis (misalnya timeout atau tidak ada koneksi) menjadi error yang dipahami aplikasi.
 
-| Use case | Tanggung jawab |
+Use case yang ditetapkan di `Architecture.md`:
+
+| Use case | Tugas |
 |---|---|
-| `GetProductByBarcode` | Validasi barcode, lalu minta `Product` dari `ProductRepository` |
-| `RecordConsumption` | Validasi natrium > 0, lalu simpan `FoodConsumption`. Hasil scan dan input manual lewat use case yang sama |
-| `GetDailySummary` | Ambil konsumsi untuk satu tanggal, jumlahkan, lalu hasilkan `DailyNutrition` beserta `riskStatus` |
-| `GetConsumptionHistory` | Ambil konsumsi dan kelompokkan per tanggal, lengkap dengan total dan status |
+| `GetProductByBarcode` | Validasi barcode, ambil `Product` |
+| `RecordConsumption` | Validasi natrium > 0, simpan konsumsi (hasil scan dan input manual) |
+| `GetDailySummary` | Hitung total natrium dan status risiko untuk satu tanggal |
+| `GetConsumptionHistory` | Ambil riwayat konsumsi per tanggal |
 
-Beberapa use case yang tidak perlu dibuat:
+## 10. State Management
 
-- **`scan_product`**: memindai adalah urusan kamera dan UI (`mobile_scanner`). Hasil scan cukup diteruskan ke `GetProductByBarcode`.
-- **`calculate_risk_status`** sebagai use case terpisah: aturan ambangnya (≤ 1.500 aman, ≤ 2.000 mendekati batas, > 2.000 bahaya) memang wajib ada di domain. **[Rekomendasi struktur]** Letakkan sebagai fungsi atau logika murni di domain, misalnya di `DailyNutrition` atau helper domain, lalu pakai di `GetDailySummary` dan `GetConsumptionHistory`. Hal yang sama berlaku untuk perhitungan natrium dari porsi/gram. Keduanya menjadi sasaran unit test.
+**Status: Recommended (Architecture.md** untuk Provider; **usulan** untuk pembagian provider**)**
 
-Alur mencatat konsumsi:
+SodiScan memakai **Provider** (`ChangeNotifier`). Provider menyimpan state halaman, memanggil use case, lalu memberi tahu UI agar diperbarui.
 
 ```text
-RecordConsumption
-  ↓ validasi sodiumMg > 0
-  ↓ ConsumptionRepository.save()  → Hive
-Provider lalu memanggil GetDailySummary
-  ↓ total dihitung ulang dari data hari ini
-  ↓ riskStatus ditentukan oleh aturan domain
+Screen  ──watch/read──▶  Provider  ──▶  Use Case  ──▶  Repository  ──▶  Data Source
+   ▲                        │
+   └──── notifyListeners ───┘
 ```
 
-"Update daily total" tidak berarti menyimpan total ke Hive. Total selalu dihitung ulang.
-
-## 11. State Management
-
-**[Ditetapkan]** Menggunakan **Provider**.
+Usulan pembagian provider:
 
 ```text
-Screen ──(context.watch / read)──→ Provider (ChangeNotifier)
-                                        ↓
-                                    Use Case → Repository → Data Source
+presentation/
+└── providers/
+    ├── product_lookup_provider.dart   pencarian produk dari hasil scan
+    ├── daily_summary_provider.dart    ringkasan hari ini + simpan konsumsi
+    └── history_provider.dart          riwayat per tanggal
 ```
 
-**[Rekomendasi struktur]** Cukup tiga provider yang dibagi per kebutuhan halaman:
+| Provider | State yang dikelola |
+|---|---|
+| `ProductLookupProvider` | idle, loading, produk ditemukan, error (dengan pesan dan arahan ke Input Manual) |
+| `DailySummaryProvider` | loading, `DailyNutrition` hari ini, daftar konsumsi hari ini, status simpan, error |
+| `HistoryProvider` | loading, kosong, daftar per tanggal, error |
+
+Batasan:
+
+- Provider hanya memanggil use case. Provider tidak mengimpor `http`, Hive, atau model data.
+- Aturan bisnis seperti ambang status risiko berada di domain, bukan di provider atau widget.
+
+## 11. Relationship Between Components
 
 ```text
-presentation/providers/
-  product_lookup_provider.dart   pencarian produk untuk halaman scan: idle, loading, found, error
-  daily_summary_provider.dart    DailyNutrition + konsumsi hari ini, serta aksi simpan konsumsi
-  history_provider.dart          riwayat per tanggal: loading, empty, data, error
+Prototype
+    ↓  menentukan isi dan alur halaman
+Screens
+    ↓  menyusun tampilan dari
+Reusable Widgets
+    ↓  menampilkan data dari
+State Management (Provider)
+    ↓  menjalankan
+Use Cases
+    ↓  meminta data lewat
+Repositories
+    ↓  mendelegasikan ke
+Data Sources
+    ↓
+Open Food Facts API / Hive
 ```
 
-State yang ditangani meliputi loading, success/data, empty, error (dengan pesan Bahasa Indonesia), produk hasil scan, ringkasan natrium harian, dan riwayat.
+| Bagian | Tanggung jawab |
+|---|---|
+| Prototype | Rancangan tampilan dan alur pengguna; bukan kode |
+| Screen | Mengatur tampilan dan interaksi satu halaman |
+| Widget | Komponen UI yang dipakai berulang |
+| Provider | Mengelola state (loading, data, error) dan memperbarui UI |
+| Use Case | Menjalankan satu operasi bisnis |
+| Repository | Menyembunyikan asal data dari domain |
+| Data Source | Berkomunikasi langsung dengan API atau Hive |
 
-Provider hanya boleh memanggil use case. Provider tidak mengimpor `http`, Hive, atau model data.
+## 12. SodiScan Main Flow
 
-## 12. API Flow
+**Status: Recommended (Architecture.md)**
+
+Contoh end-to-end: memindai produk lalu mencatat konsumsinya.
 
 ```text
-Pindai Barcode (mobile_scanner mendeteksi kode)
- ↓ hentikan deteksi berikutnya
-ProductLookupProvider → state loading
- ↓
-GetProductByBarcode → validasi barcode
- ↓
-ProductRepository (interface) → ProductRepositoryImpl
- ↓
-Remote Data Source → HTTP GET Open Food Facts API v2 (timeout 10 detik)
- ↓
-JSON → ProductModel (natrium g × 1.000 = mg)
- ↓
+User
+  ↓
+Scanner Screen                     kamera aktif (mobile_scanner)
+  ↓  barcode terdeteksi, deteksi berikutnya dihentikan
+ProductLookupProvider              state: loading
+  ↓
+GetProductByBarcode                validasi barcode
+  ↓
+ProductRepository
+  ↓
+Open Food Facts Remote Data Source
+  ↓
+Open Food Facts API v2             timeout 10 detik
+  ↓
+JSON → ProductModel                natrium g × 1.000 = mg
+  ↓
 Product (entity)
- ↓
-Provider → state found → Navigator ke Detail Produk
-```
-
-Jalur gagal: produk tidak ditemukan, natrium kosong, offline, timeout, atau API error. Repository mengembalikan failure, Provider mengubahnya menjadi pesan yang jelas, lalu UI menawarkan tombol **Input Manual**.
-
-## 13. Local Data Flow
-
-**Menyimpan** (dari Detail Produk maupun Input Manual):
-
-```text
-Pengguna tap "Simpan Konsumsi"
- ↓
+  ↓
+Product Detail Screen              user mengisi porsi/berat, melihat hasil hitung
+  ↓  user tap "Simpan Konsumsi"
 DailySummaryProvider
- ↓
-RecordConsumption (validasi natrium > 0)
- ↓
-ConsumptionRepository → ConsumptionRepositoryImpl
- ↓
-FoodConsumption → FoodConsumptionModel
- ↓
-Local Data Source → Hive box "consumptions"
+  ↓
+RecordConsumption                  validasi natrium > 0
+  ↓
+ConsumptionRepository
+  ↓
+Consumption Local Data Source → Hive box "consumptions"
+  ↓
+GetDailySummary                    total harian dihitung ulang
+  ↓                                status risiko ditentukan di domain
+Beranda                            total dan badge status diperbarui
 ```
 
-**Menampilkan kembali** (Beranda dan Riwayat, juga saat offline atau setelah aplikasi dibuka ulang):
+Penjelasan singkat:
+
+1. Scanner membaca barcode, lalu provider meminta data produk lewat use case.
+2. Repository mengambil data dari Open Food Facts dan mengubah JSON menjadi entity `Product`.
+3. Pengguna mengonfirmasi jumlah yang dikonsumsi di Detail Produk.
+4. `RecordConsumption` menyimpan konsumsi ke Hive.
+5. Total harian dan status risiko dihitung ulang dari data hari itu, lalu Beranda menampilkan hasilnya.
+
+Jalur gagal: jika produk tidak ditemukan, data natrium kosong, offline, atau API gagal, Scanner menampilkan pesan yang jelas dan mengarahkan ke **Input Manual**. Input Manual menyimpan data lewat `RecordConsumption` yang sama, mulai dari langkah 4.
+
+## 13. Recommended Final Structure
+
+**Status: Recommended (Architecture.md** untuk folder; **usulan** untuk nama file dan `app.dart`**)**
 
 ```text
-Hive box "consumptions"
- ↓
-Local Data Source → FoodConsumptionModel
- ↓
-Repository → FoodConsumption (entity)
- ↓
-GetDailySummary / GetConsumptionHistory (hitung total + riskStatus)
- ↓
-DailySummaryProvider / HistoryProvider
- ↓
-Beranda / Riwayat
+SodiScan/
+│
+├── README.md
+├── Architecture.md
+├── Flutter-Structure.md
+│
+├── lib/
+│   ├── main.dart                      inisialisasi Hive, dependency, Provider, runApp
+│   ├── app.dart                       (opsional) MaterialApp dan theme
+│   │
+│   ├── core/
+│   │   ├── constants/                 batas natrium, ambang status, URL API, timeout
+│   │   ├── errors/                    tipe error/failure
+│   │   └── utils/                     format tanggal dan angka
+│   │
+│   ├── data/
+│   │   ├── datasources/
+│   │   │   ├── local/                 consumption_local_data_source.dart
+│   │   │   └── remote/                open_food_facts_remote_data_source.dart
+│   │   ├── models/                    product_model.dart, food_consumption_model.dart
+│   │   └── repositories/              product_repository_impl.dart, consumption_repository_impl.dart
+│   │
+│   ├── domain/
+│   │   ├── entities/                  product.dart, food_consumption.dart, daily_nutrition.dart
+│   │   ├── repositories/              product_repository.dart, consumption_repository.dart
+│   │   └── usecases/                  get_product_by_barcode.dart, record_consumption.dart,
+│   │                                  get_daily_summary.dart, get_consumption_history.dart
+│   │
+│   └── presentation/
+│       ├── providers/                 product_lookup_provider.dart, daily_summary_provider.dart,
+│       │                              history_provider.dart
+│       ├── screens/                   home/, scanner/, product_detail/, manual_input/, history/
+│       └── widgets/                   primary_button.dart, sodium_summary_card.dart,
+│                                      risk_status_badge.dart, consumption_tile.dart,
+│                                      empty_state.dart, error_state.dart
+│
+├── test/                              unit test perhitungan natrium dan status risiko
+│
+└── pubspec.yaml                       provider, hive, hive_flutter, mobile_scanner, http
 ```
 
-## 14. Relation Between Prototype and Implementation
+Struktur ini sengaja tidak memuat backend, autentikasi, Firebase, cloud database, atau package routing tambahan, karena semuanya di luar scope SodiScan.
 
-```text
-Prototype (wireframe / Figma / UI dummy)
-   ↓ menentukan isi dan alur 5 halaman
-Flutter Screens            (presentation/screens)
-   ↓ elemen yang berulang diekstrak
-Reusable Widgets           (presentation/widgets)
-   ↓ data dummy diganti state
-Provider                   (presentation/providers)
-   ↓
-Use Case + Entity          (domain)   ← aturan natrium dan status risiko
-   ↓
-Repository + Data Source   (data)     ← Open Food Facts API dan Hive
-```
+## 14. Implemented vs Recommended
 
-Prototype bukan arsitektur. Prototype menjawab pertanyaan *apa yang dilihat dan dilakukan pengguna*. Struktur project menjawab *di mana kode yang mewujudkannya ditulis*.
+| Bagian | Status | Keterangan |
+|---|---|---|
+| `README.md`, `Architecture.md`, `Flutter-Structure.md` | **Implemented** | Dokumentasi sudah ada di repository |
+| Source code Flutter (`lib/`, `test/`, `pubspec.yaml`) | Belum ada | Belum dibuat |
+| Stack: Flutter, Provider, Hive, `mobile_scanner`, `http`, Open Food Facts | Recommended (Architecture.md) | Ditetapkan, belum diimplementasikan |
+| Struktur folder `core/`, `data/`, `domain/`, `presentation/` | Recommended (Architecture.md) | Ditetapkan, belum diimplementasikan |
+| Lima screen (Beranda, Pindai Barcode, Detail Produk, Input Manual, Riwayat) | Recommended (Architecture.md) | Ditetapkan, belum diimplementasikan |
+| Entity `Product`, `FoodConsumption`, `DailyNutrition` | Recommended (Architecture.md) | Ditetapkan, belum diimplementasikan |
+| Use case `GetProductByBarcode`, `RecordConsumption`, `GetDailySummary`, `GetConsumptionHistory` | Recommended (Architecture.md) | Ditetapkan, belum diimplementasikan |
+| Hive box `consumptions`, aturan status risiko, timeout 10 detik | Recommended (Architecture.md) | Ditetapkan, belum diimplementasikan |
+| Prototype dalam bentuk mock UI Flutter | Recommended (usulan) | Belum ada desain Figma |
+| `app.dart` | Recommended (usulan) | Opsional |
+| Navigasi dengan `Navigator` bawaan | Recommended (usulan) | Mengikuti batasan tanpa package routing |
+| Nama file screen, widget, model, data source, repository, provider | Recommended (usulan) | Dapat berubah saat implementasi |
+| Enum `RiskStatus` dan pembagian tiga provider | Recommended (usulan) | Dapat berubah saat implementasi |
 
-Contoh: badge "Mendekati Batas" berwarna oranye di prototype.
-
-- Warna dan bentuknya diwujudkan oleh `RiskStatusBadge` di presentation.
-- Keputusan kapan statusnya "Mendekati Batas" (> 1.500 mg dan ≤ 2.000 mg) ada di domain, bukan di widget.
-
-## 15. Recommended SodiScan Structure
-
-**[Rekomendasi struktur]** Susunan ini mengikuti kerangka folder yang **[Ditetapkan]** di `Architecture.md`. Nama file di dalamnya adalah usulan, kecuali nama class use case dan entity.
-
-```text
-lib/
-├── main.dart                         init Hive, rakit dependency, runApp
-├── app.dart                          (opsional) MaterialApp, theme, routes, MultiProvider
-│
-├── core/
-│   ├── constants/                    batas 2.000 mg, ambang 1.500 mg, URL API, timeout, warna status
-│   ├── errors/                       failure: not found, natrium kosong, offline, server
-│   └── utils/                        format tanggal/angka
-│
-├── data/
-│   ├── datasources/
-│   │   ├── remote/                   open_food_facts_remote_data_source.dart
-│   │   └── local/                    consumption_local_data_source.dart (box "consumptions")
-│   ├── models/                       product_model.dart, food_consumption_model.dart
-│   └── repositories/                 product_repository_impl.dart, consumption_repository_impl.dart
-│
-├── domain/
-│   ├── entities/                     product.dart, food_consumption.dart, daily_nutrition.dart (+ enum RiskStatus)
-│   ├── repositories/                 product_repository.dart, consumption_repository.dart
-│   └── usecases/                     get_product_by_barcode.dart, record_consumption.dart,
-│                                     get_daily_summary.dart, get_consumption_history.dart
-│
-└── presentation/
-    ├── providers/                    product_lookup_provider.dart, daily_summary_provider.dart, history_provider.dart
-    ├── screens/                      home/, scanner/, product_detail/, manual_input/, history/
-    └── widgets/                      risk_status_badge.dart, sodium_summary_card.dart, consumption_tile.dart,
-                                      primary_button.dart, empty_state.dart, error_state.dart
-
-test/
-└── domain/                           unit test perhitungan natrium dan status risiko (deliverable)
-```
-
-Batasan yang tetap berlaku: tanpa backend, autentikasi, Firebase, cloud database, cloud sync, atau package routing tambahan. UI dan Provider juga tidak boleh mengakses API atau Hive secara langsung.
+Saat source code mulai dibuat, ubah status bagian yang sudah ada menjadi **Implemented**, lalu sesuaikan nama file dan class di dokumen ini dengan kode sebenarnya.

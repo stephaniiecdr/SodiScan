@@ -27,3 +27,11 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# Flutter / IDE
+.DS_Store
+*.iml
+.idea/
+.vscode/
+*.log
+migrate_working_dir/

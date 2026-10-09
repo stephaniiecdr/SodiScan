@@ -1,0 +1,5 @@
+import '../entities/product.dart';
+
+abstract class ProductRepository {
+  Future<Product?> getProductByBarcode(String barcode);
+}
