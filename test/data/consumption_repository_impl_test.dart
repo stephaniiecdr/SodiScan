@@ -46,4 +46,29 @@ void main() {
     expect(today.single.barcode, '089686010947');
     expect(today.single.source, ConsumptionSource.scan);
   });
+
+  test('membaca seluruh riwayat konsumsi dari Hive', () async {
+    final yesterday = FoodConsumption(
+      id: 'old',
+      productName: 'Keripik Kemarin',
+      sodiumMg: 300,
+      source: ConsumptionSource.manual,
+      consumedAt: fixedNow.subtract(const Duration(days: 1)),
+    );
+    await repository.saveConsumption(indomieConsumption());
+    await repository.saveConsumption(yesterday);
+
+    final all = await repository.getAllConsumptions();
+
+    expect(all.map((item) => item.id), unorderedEquals(['indomie-1', 'old']));
+  });
+
+  test('menghapus konsumsi dari Hive berdasarkan id', () async {
+    await repository.saveConsumption(indomieConsumption());
+
+    await repository.deleteConsumption('indomie-1');
+
+    expect(box.isEmpty, isTrue);
+    expect(await repository.getAllConsumptions(), isEmpty);
+  });
 }

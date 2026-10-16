@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../core/errors/failures.dart';
 import '../../domain/entities/daily_nutrition.dart';
+import '../../domain/usecases/delete_consumption.dart';
 import '../../domain/usecases/get_daily_summary.dart';
 import '../../domain/usecases/record_consumption.dart';
 import 'add_consumption_state.dart';
@@ -10,16 +11,20 @@ class AddConsumptionNotifier extends ChangeNotifier {
   AddConsumptionNotifier({
     required GetDailySummary getDailySummary,
     required RecordConsumption recordConsumption,
+    required DeleteConsumption deleteConsumption,
     DateTime Function()? clock,
   })  : _getDailySummary = getDailySummary,
         _recordConsumption = recordConsumption,
+        _deleteConsumption = deleteConsumption,
         _clock = clock ?? DateTime.now;
 
   static const String loadErrorText = 'Data tidak dapat dimuat.';
   static const String submitErrorText = 'Konsumsi gagal disimpan. Silakan coba lagi.';
+  static const String deleteErrorText = 'Konsumsi gagal dihapus. Silakan coba lagi.';
 
   final GetDailySummary _getDailySummary;
   final RecordConsumption _recordConsumption;
+  final DeleteConsumption _deleteConsumption;
   final DateTime Function() _clock;
 
   AddConsumptionState _state = const AddConsumptionState();
@@ -51,6 +56,16 @@ class AddConsumptionNotifier extends ChangeNotifier {
     }
 
     _emit(_state.copyWith(isSubmitting: false));
+    await _fetchSummary();
+    return true;
+  }
+
+  Future<bool> delete(String id) async {
+    try {
+      await _deleteConsumption(id);
+    } on Exception {
+      return false;
+    }
     await _fetchSummary();
     return true;
   }

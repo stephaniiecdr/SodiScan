@@ -11,5 +11,7 @@ class ConsumptionLocalDataSource {
 
   Future<void> save(FoodConsumptionModel model) => _box.put(model.id, model.toMap());
 
+  Future<void> delete(String id) => _box.delete(id);
+
   List<FoodConsumptionModel> getAll() => _box.values.map(FoodConsumptionModel.fromMap).toList();
 }

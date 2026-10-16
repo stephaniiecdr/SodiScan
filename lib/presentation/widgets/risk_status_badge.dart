@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../domain/entities/risk_status.dart';
 
+Color riskStatusColor(RiskStatus status) {
+  return switch (status) {
+    RiskStatus.safe => const Color(0xFF2E7D32),
+    RiskStatus.nearLimit => const Color(0xFFE65100),
+    RiskStatus.danger => const Color(0xFFC62828),
+  };
+}
+
 class RiskStatusBadge extends StatelessWidget {
   const RiskStatusBadge({super.key, required this.status});
 
@@ -9,10 +17,11 @@ class RiskStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (label, color) = switch (status) {
-      RiskStatus.safe => ('Aman', const Color(0xFF2E7D32)),
-      RiskStatus.nearLimit => ('Mendekati Batas', const Color(0xFFE65100)),
-      RiskStatus.danger => ('Bahaya', const Color(0xFFC62828)),
+    final color = riskStatusColor(status);
+    final label = switch (status) {
+      RiskStatus.safe => 'Aman',
+      RiskStatus.nearLimit => 'Mendekati Batas',
+      RiskStatus.danger => 'Bahaya',
     };
 
     return Container(

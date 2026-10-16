@@ -23,11 +23,29 @@ class ConsumptionRepositoryImpl implements ConsumptionRepository {
   }
 
   @override
+  Future<List<FoodConsumption>> getAllConsumptions() async {
+    try {
+      return _localDataSource.getAll().map((model) => model.toEntity()).toList();
+    } catch (error) {
+      throw StorageFailure('Gagal membaca riwayat konsumsi: $error');
+    }
+  }
+
+  @override
   Future<void> saveConsumption(FoodConsumption consumption) async {
     try {
       await _localDataSource.save(FoodConsumptionModel.fromEntity(consumption));
     } catch (error) {
       throw StorageFailure('Gagal menyimpan data konsumsi: $error');
+    }
+  }
+
+  @override
+  Future<void> deleteConsumption(String id) async {
+    try {
+      await _localDataSource.delete(id);
+    } catch (error) {
+      throw StorageFailure('Gagal menghapus data konsumsi: $error');
     }
   }
 

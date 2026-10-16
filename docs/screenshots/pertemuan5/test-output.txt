@@ -1,0 +1,61 @@
+00:00 +0: test/core/date_format_test.dart: memformat tanggal dalam Bahasa Indonesia
+00:00 +1: test/data/consumption_repository_impl_test.dart: menyimpan konsumsi ke Hive dan membacanya kembali per tanggal
+00:00 +2: test/data/consumption_repository_impl_test.dart: membaca seluruh riwayat konsumsi dari Hive
+00:00 +3: test/data/consumption_repository_impl_test.dart: menghapus konsumsi dari Hive berdasarkan id
+00:00 +4: test/data/open_food_facts_remote_data_source_test.dart: mengambil produk dan mengubah natrium dari gram ke mg
+00:00 +5: test/data/open_food_facts_remote_data_source_test.dart: produk tanpa data natrium menghasilkan nilai natrium null
+00:00 +6: test/data/open_food_facts_remote_data_source_test.dart: status 404 atau status 0 berarti produk tidak ditemukan
+00:00 +7: test/data/open_food_facts_remote_data_source_test.dart: repository mengubah error server dan timeout menjadi NetworkFailure
+00:00 +8: test/domain/get_consumption_history_test.dart: mengelompokkan konsumsi per tanggal dengan tanggal terbaru di atas
+00:00 +9: test/domain/get_consumption_history_test.dart: konsumsi di dalam satu tanggal diurutkan dari yang terbaru
+00:00 +10: test/domain/get_consumption_history_test.dart: menghasilkan list kosong jika belum ada konsumsi
+00:00 +11: test/domain/product_test.dart: Product memakai data per saji jika tersedia
+00:00 +12: test/domain/product_test.dart: Product memakai data per 100 g jika data per saji tidak ada
+00:00 +13: test/domain/product_test.dart: Product mendeteksi produk tanpa data natrium
+00:00 +14: test/domain/product_test.dart: GetProductByBarcode meneruskan barcode valid yang sudah di-trim ke repository
+00:00 +15: test/domain/product_test.dart: GetProductByBarcode menolak barcode yang bukan 8 sampai 13 digit angka tanpa memanggil repository
+00:00 +16: test/domain/risk_status_test.dart: status aman sampai 1500 mg
+00:00 +17: test/domain/risk_status_test.dart: status mendekati batas di atas 1500 mg sampai 2000 mg
+00:00 +18: test/domain/risk_status_test.dart: status bahaya di atas 2000 mg
+00:00 +19: test/domain/usecases_test.dart: RecordConsumption menyimpan konsumsi manual dengan nama yang sudah di-trim
+00:00 +20: test/domain/usecases_test.dart: RecordConsumption menolak sodium nol, negatif, dan bukan angka berhingga tanpa menyimpan
+00:00 +21: test/domain/usecases_test.dart: RecordConsumption menolak nama makanan kosong
+00:00 +22: test/domain/usecases_test.dart: GetDailySummary menjumlahkan sodium hari ini saja dan menentukan status risiko
+00:00 +23: test/presentation/providers/add_consumption_notifier_test.dart: state awal adalah loading
+00:01 +24: test/presentation/providers/add_consumption_notifier_test.dart: load menghasilkan success, empty, atau error sesuai hasil repository
+00:01 +25: test/presentation/providers/add_consumption_notifier_test.dart: submit kedua saat submit pertama berjalan diabaikan
+00:01 +26: test/presentation/providers/add_consumption_notifier_test.dart: submit gagal menyimpan pesan error dan mengembalikan isSubmitting ke false
+00:01 +27: test/presentation/providers/add_consumption_notifier_test.dart: delete menghapus konsumsi lalu menghitung ulang ringkasan harian
+00:01 +28: test/presentation/providers/history_notifier_test.dart: load menghasilkan success, empty, atau error sesuai hasil repository
+00:01 +29: test/presentation/providers/product_lookup_notifier_test.dart: state awal idle
+00:01 +30: test/presentation/providers/product_lookup_notifier_test.dart: search menghasilkan success, empty, atau error
+00:01 +31: test/presentation/providers/product_lookup_notifier_test.dart: retry mencari ulang barcode terakhir
+00:01 +33: test/presentation/providers/product_lookup_notifier_test.dart: submit menyimpan konsumsi hasil scan satu kali walaupun dipanggil dua kali
+00:01 +34: test/presentation/providers/product_lookup_notifier_test.dart: submit gagal menyimpan pesan error
+00:02 +36: test/presentation/screens/add_consumption/delete_consumption_test.dart: hapus konsumsi setelah konfirmasi lalu total dan status dihitung ulang
+00:02 +37: test/presentation/screens/add_consumption/delete_consumption_test.dart: hapus konsumsi setelah konfirmasi lalu total dan status dihitung ulang
+00:02 +38: test/presentation/screens/add_consumption/delete_consumption_test.dart: hapus konsumsi setelah konfirmasi lalu total dan status dihitung ulang
+00:02 +39: test/presentation/screens/add_consumption/delete_consumption_test.dart: hapus konsumsi setelah konfirmasi lalu total dan status dihitung ulang
+00:02 +40: test/presentation/screens/add_consumption/delete_consumption_test.dart: hapus konsumsi setelah konfirmasi lalu total dan status dihitung ulang
+00:02 +41: test/presentation/screens/history/history_screen_test.dart: menampilkan konsumsi per tanggal beserta total dan status risiko
+00:02 +42: test/presentation/screens/history/history_screen_test.dart: menampilkan konsumsi per tanggal beserta total dan status risiko
+00:02 +43: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Idle - menampilkan petunjuk sebelum pencarian
+00:03 +44: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Idle - menampilkan petunjuk sebelum pencarian
+00:03 +45: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Idle - menampilkan petunjuk sebelum pencarian
+00:03 +46: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: State 5 - validasi form menolak input kosong, bukan angka, dan nol
+00:03 +47: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: State 5 - validasi form menolak input kosong, bukan angka, dan nol
+00:03 +48: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: State 5 - validasi form menolak input kosong, bukan angka, dan nol
+00:03 +49: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: State 5 - validasi form menolak input kosong, bukan angka, dan nol
+00:03 +50: test/presentation/screens/home/home_screen_test.dart: tombol Input Manual membuka form, simpan kembali ke Beranda dengan total baru
+00:03 +51: test/presentation/screens/home/home_screen_test.dart: tombol Input Manual membuka form, simpan kembali ke Beranda dengan total baru
+00:03 +52: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: State 6 - submit menampilkan loading, menonaktifkan tombol, dan mencegah double submit
+00:03 +53: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: State 6 - submit menampilkan loading, menonaktifkan tombol, dan mencegah double submit
+00:04 +54: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: State 6 - submit menampilkan loading, menonaktifkan tombol, dan mencegah double submit
+00:04 +55: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Success - menampilkan data produk dan form porsi
+00:04 +56: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: Submit error - pesan gagal tampil dan form tetap bisa digunakan
+00:04 +57: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Empty - produk tidak ditemukan dan produk tanpa data natrium
+00:04 +58: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Error + Retry - tombol Coba Lagi mencari ulang barcode yang sama
+00:04 +59: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Validasi porsi - menolak kosong, bukan angka, dan nol
+00:04 +60: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Perhitungan natrium - memakai data per 100 g untuk produk tanpa data per saji
+00:05 +62: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Submit error - pesan gagal tampil dan form tetap bisa digunakan
+00:05 +63: All tests passed!

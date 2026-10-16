@@ -11,6 +11,7 @@ class FakeConsumptionRepository implements ConsumptionRepository {
 
   bool failLoad = false;
   bool failSave = false;
+  bool failDelete = false;
   Completer<void>? loadGate;
   Completer<void>? saveGate;
 
@@ -29,11 +30,25 @@ class FakeConsumptionRepository implements ConsumptionRepository {
   }
 
   @override
+  Future<List<FoodConsumption>> getAllConsumptions() async {
+    loadCalls++;
+    if (loadGate != null) await loadGate!.future;
+    if (failLoad) throw const StorageFailure('load failed');
+    return List.of(items);
+  }
+
+  @override
   Future<void> saveConsumption(FoodConsumption consumption) async {
     saveCalls++;
     if (saveGate != null) await saveGate!.future;
     if (failSave) throw const StorageFailure('save failed');
     items.add(consumption);
+  }
+
+  @override
+  Future<void> deleteConsumption(String id) async {
+    if (failDelete) throw const StorageFailure('delete failed');
+    items.removeWhere((item) => item.id == id);
   }
 }
 

@@ -41,6 +41,7 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Konsumsi berhasil disimpan.')),
     );
+    await Navigator.of(context).maybePop(true);
   }
 
   @override
