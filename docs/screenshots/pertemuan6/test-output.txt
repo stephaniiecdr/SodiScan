@@ -1,0 +1,20 @@
+00:00 +0: loading test/data/consumption_api_test.dart
+00:00 +0: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 1. Model valid: JSON lengkap diubah menjadi model dan entity
+00:00 +1: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 2. Model invalid: field wajib hilang atau salah tipe ditolak dengan FormatException
+00:00 +2: test/domain/sync_consumptions_test.dart: GetServerConsumptions mengurutkan data server dari yang terbaru
+00:00 +3: test/domain/sync_consumptions_test.dart: GetServerConsumptions mengurutkan data server dari yang terbaru
+00:00 +4: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 4. Data kosong: server mengembalikan daftar kosong
+00:00 +5: test/domain/sync_consumptions_test.dart: UploadConsumptions mengirim semua data lokal tanpa duplikasi di server
+00:00 +6: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 5. HTTP gagal: status 500, offline, dan timeout menjadi NetworkFailure
+00:00 +7: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 5. HTTP gagal: status 500, offline, dan timeout menjadi NetworkFailure
+00:00 +8: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 5. HTTP gagal: status 500, offline, dan timeout menjadi NetworkFailure
+00:00 +9: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 6. JSON rusak: body bukan JSON, tanpa "data", atau item tidak valid menjadi DataFormatFailure
+00:00 +10: test/presentation/screens/server_sync/server_sync_screen_test.dart: Loading - indikator tampil selama data server dimuat
+00:01 +11: test/presentation/screens/server_sync/server_sync_screen_test.dart: Success - menampilkan data dari server
+00:01 +12: test/presentation/screens/server_sync/server_sync_screen_test.dart: Empty - server belum memiliki data
+00:01 +13: test/presentation/screens/server_sync/server_sync_screen_test.dart: Error + Retry - gagal terhubung lalu berhasil setelah Coba Lagi
+00:01 +14: test/presentation/screens/server_sync/server_sync_screen_test.dart: Error JSON rusak menampilkan pesan data tidak valid
+00:01 +15: test/presentation/screens/server_sync/server_sync_screen_test.dart: Kirim ke Server menyimpan data lokal ke backend lalu memuat ulang
+00:01 +16: test/presentation/screens/server_sync/server_sync_screen_test.dart: tombol sinkronisasi nonaktif selama proses agar tidak double tap
+00:01 +17: test/presentation/screens/server_sync/server_sync_screen_test.dart: Ambil ke HP menyimpan data server ke perangkat
+00:02 +18: All tests passed!

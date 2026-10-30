@@ -15,6 +15,10 @@ class StorageFailure extends Failure {
   const StorageFailure(super.message);
 }
 
+class DataFormatFailure extends Failure {
+  const DataFormatFailure(super.message);
+}
+
 class NetworkFailure extends Failure {
   const NetworkFailure(super.message);
 }

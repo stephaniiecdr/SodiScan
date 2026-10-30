@@ -13,6 +13,7 @@ import '../../widgets/state_message.dart';
 import '../add_consumption/add_consumption_screen.dart';
 import '../history/history_screen.dart';
 import '../product_lookup/product_lookup_screen.dart';
+import '../server_sync/server_sync_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -30,6 +31,12 @@ class HomeScreen extends StatelessWidget {
             tooltip: 'Riwayat Konsumsi',
             icon: const Icon(Icons.history),
             onPressed: () => Navigator.of(context).push(HistoryScreen.route(context)),
+          ),
+          IconButton(
+            key: const Key('openServerSyncButton'),
+            tooltip: 'Sinkronisasi Server',
+            icon: const Icon(Icons.cloud_sync_outlined),
+            onPressed: () => Navigator.of(context).push(ServerSyncScreen.route(context)),
           ),
         ],
       ),
