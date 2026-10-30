@@ -6,6 +6,7 @@ import '../../domain/entities/food_consumption.dart';
 import '../../domain/usecases/delete_consumption.dart';
 import '../../domain/usecases/get_daily_summary.dart';
 import '../../domain/usecases/record_consumption.dart';
+import '../../domain/usecases/send_sodium_alert.dart';
 import '../../domain/usecases/update_consumption.dart';
 import 'add_consumption_state.dart';
 
@@ -15,11 +16,13 @@ class AddConsumptionNotifier extends ChangeNotifier {
     required RecordConsumption recordConsumption,
     required UpdateConsumption updateConsumption,
     required DeleteConsumption deleteConsumption,
+    SendSodiumAlert? sendSodiumAlert,
     DateTime Function()? clock,
   })  : _getDailySummary = getDailySummary,
         _recordConsumption = recordConsumption,
         _updateConsumption = updateConsumption,
         _deleteConsumption = deleteConsumption,
+        _sendSodiumAlert = sendSodiumAlert,
         _clock = clock ?? DateTime.now;
 
   static const String loadErrorText = 'Data tidak dapat dimuat.';
@@ -31,6 +34,7 @@ class AddConsumptionNotifier extends ChangeNotifier {
   final RecordConsumption _recordConsumption;
   final UpdateConsumption _updateConsumption;
   final DeleteConsumption _deleteConsumption;
+  final SendSodiumAlert? _sendSodiumAlert;
   final DateTime Function() _clock;
 
   AddConsumptionState _state = const AddConsumptionState();
@@ -93,11 +97,21 @@ class AddConsumptionNotifier extends ChangeNotifier {
   }
 
   Future<void> _fetchSummary() async {
+    final previous = _state.summary;
     try {
       final summary = await _getDailySummary(_clock());
       _emit(_state.copyWith(loadStatus: _statusFor(summary), summary: summary, clearLoadError: true));
+      await _alertIfNeeded(previous, summary);
     } on Exception {
       _emit(_state.copyWith(loadStatus: LoadStatus.error, loadErrorMessage: loadErrorText));
+    }
+  }
+
+  Future<void> _alertIfNeeded(DailyNutrition? previous, DailyNutrition current) async {
+    try {
+      await _sendSodiumAlert?.call(previous: previous, current: current);
+    } catch (_) {
+      // Notifikasi bersifat tambahan; kegagalannya tidak boleh mengganggu pencatatan.
     }
   }
 

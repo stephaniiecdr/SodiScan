@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sodiscan/domain/usecases/delete_consumption.dart';
 import 'package:sodiscan/domain/usecases/get_daily_summary.dart';
+import 'package:sodiscan/domain/repositories/settings_repository.dart';
 import 'package:sodiscan/domain/usecases/record_consumption.dart';
+import 'package:sodiscan/domain/usecases/send_sodium_alert.dart';
 import 'package:sodiscan/domain/usecases/update_consumption.dart';
 import 'package:sodiscan/presentation/providers/add_consumption_notifier.dart';
 import 'package:sodiscan/presentation/providers/add_consumption_state.dart';
 
 import '../../helpers/fake_consumption_repository.dart';
+import '../../helpers/fake_device_services.dart';
 
 void main() {
   AddConsumptionNotifier buildNotifier(FakeConsumptionRepository repository) {
@@ -119,5 +122,31 @@ void main() {
     expect(updated, isFalse);
     expect(notifier.state.submitErrorMessage, AddConsumptionNotifier.updateErrorText);
     expect(notifier.state.summary!.totalSodiumMg, 750);
+  });
+
+  test('notifikasi dikirim saat catatan baru membuat status naik ke Bahaya', () async {
+    final repository = FakeConsumptionRepository(items: [indomieConsumption()]);
+    final notifications = FakeNotificationService();
+    final notifier = AddConsumptionNotifier(
+      getDailySummary: GetDailySummary(repository),
+      recordConsumption: RecordConsumption(repository, clock: () => fixedNow),
+      updateConsumption: UpdateConsumption(repository),
+      deleteConsumption: DeleteConsumption(repository),
+      sendSodiumAlert: SendSodiumAlert(
+        FakeSettingsRepository(const AppSettings(sodiumAlertsEnabled: true)),
+        notifications,
+      ),
+      clock: () => fixedNow,
+    );
+    await notifier.load();
+    expect(notifications.shown, isEmpty);
+
+    await notifier.submit(productName: 'Sosis Bakar', sodiumMg: 1500);
+
+    expect(notifier.state.summary!.totalSodiumMg, 2250);
+    expect(notifications.shown.single.$1, 'Natrium hari ini melebihi batas');
+
+    await notifier.submit(productName: 'Kerupuk', sodiumMg: 100);
+    expect(notifications.shown, hasLength(1));
   });
 }

@@ -22,6 +22,9 @@ Pengguna utama SodiScan adalah individu yang ingin lebih sadar terhadap konsumsi
 - Memberikan indikator sederhana berbasis warna mengenai posisi konsumsi natrium terhadap batas harian.
 - Membantu pencatatan riwayat konsumsi makanan secara lokal di perangkat pengguna.
 - Tetap menyediakan alternatif input manual ketika produk tidak ditemukan di database atau aplikasi sedang offline.
+- Memberi notifikasi peringatan saat konsumsi natrium hari ini mulai mendekati atau melebihi batas.
+- Melindungi catatan konsumsi (data kesehatan pribadi) dengan kunci sidik jari, wajah, atau PIN HP tanpa perlu membuat akun.
+- Menyediakan cadangan riwayat konsumsi ke server agar data dapat dipulihkan kembali ke perangkat.
 ## Daftar Fitur Inti
  
 | Fitur | Deskripsi |
@@ -32,22 +35,26 @@ Pengguna utama SodiScan adalah individu yang ingin lebih sadar terhadap konsumsi
 | Perhitungan Total Natrium Harian | Menjumlahkan seluruh natrium dari produk yang dicatat pengguna dalam satu hari. |
 | Indikator Risiko Berbasis Warna | Menampilkan status konsumsi harian (Aman, Mendekati Batas, Bahaya) berdasarkan akumulasi natrium terhadap batas 2.000 mg/hari. |
 | Riwayat Konsumsi | Menampilkan daftar makanan yang telah dicatat pengguna beserta kandungan natriumnya. |
-| Penyimpanan Lokal (Hive) | Menyimpan seluruh data konsumsi pengguna secara lokal di perangkat tanpa server. |
+| Ubah dan Hapus Konsumsi | Memperbaiki atau menghapus catatan yang salah input agar total dan status risiko tetap akurat. |
+| Penyimpanan Lokal (Hive) | Menyimpan seluruh data konsumsi dan pengaturan pengguna secara lokal di perangkat, sehingga aplikasi tetap berjalan tanpa server. |
 | Manual Input Natrium | Memungkinkan pengguna memasukkan nilai natrium secara manual jika produk tidak ditemukan. |
 | Offline/Error Fallback | Menyediakan alur input alternatif saat aplikasi tidak terhubung ke internet atau API gagal merespons. |
+| Sinkronisasi Server (SodiScan API) | Mengirim riwayat konsumsi ke backend REST milik sendiri dan memulihkannya kembali ke perangkat, dijalankan manual oleh pengguna. |
+| Notifikasi Peringatan Natrium | Mengirim notifikasi lokal saat status harian naik ke Mendekati Batas atau Bahaya (dapat diaktifkan di Pengaturan). |
+| Kunci Aplikasi (Biometrik/PIN) | Meminta sidik jari, wajah, atau PIN HP sebelum aplikasi dapat dibuka (dapat diaktifkan di Pengaturan). |
  
 ## Fitur yang Tidak Dikerjakan
  
 Bagian ini menjelaskan fitur atau scope yang secara sengaja tidak dikerjakan dalam proyek ini, mengingat keterbatasan waktu pengerjaan selama 12 pertemuan serta fokus pengembangan yang ditetapkan pada aplikasi local-first:
  
-- **Autentikasi dan registrasi akun** — tidak diperlukan karena aplikasi berjalan tanpa sistem login.
-- **Backend/server milik sendiri** — seluruh data diproses dan disimpan secara lokal di perangkat pengguna.
-- **Cloud synchronization** — data tidak disinkronkan ke layanan cloud mana pun.
-- **Integrasi database online untuk data pengguna** — penyimpanan data pengguna sepenuhnya menggunakan Hive secara lokal.
+- **Registrasi dan login akun** — aplikasi tidak memakai akun; autentikasi dilakukan dengan kunci biometrik/PIN bawaan perangkat.
+- **Backend multi-pengguna** — backend SodiScan hanya menyimpan riwayat satu pengguna untuk keperluan cadangan, tanpa pemisahan data per akun.
+- **Sinkronisasi otomatis ke cloud publik** — sinkronisasi hanya ke SodiScan API dan dijalankan manual oleh pengguna, bukan sinkronisasi real-time antar perangkat.
+- **Database online terkelola** — backend menyimpan data dalam file JSON sederhana, bukan layanan database online; penyimpanan utama tetap Hive di perangkat.
 - **Sistem rekomendasi makanan berbasis AI** — di luar scope karena membutuhkan kompleksitas pengembangan yang tidak sesuai dengan waktu pengerjaan.
 - **Diagnosis atau rekomendasi medis** — aplikasi hanya menampilkan informasi natrium, bukan saran kesehatan atau diagnosis.
 - **Integrasi dengan perangkat wearable** — tidak termasuk dalam kebutuhan dasar proyek.
-- **Notifikasi kesehatan yang kompleks** — hanya indikator visual sederhana yang dikerjakan, bukan sistem notifikasi bertingkat.
+- **Notifikasi kesehatan yang kompleks** — hanya peringatan sederhana saat status natrium harian naik, bukan pengingat terjadwal atau sistem notifikasi bertingkat.
 - **Fitur sosial antar pengguna** — aplikasi difokuskan sebagai alat pemantauan pribadi, bukan platform sosial.
 ## Kriteria Aplikasi Dinyatakan Berhasil
  
@@ -59,4 +66,9 @@ Bagian ini menjelaskan fitur atau scope yang secara sengaja tidak dikerjakan dal
 - Indikator warna berubah sesuai dengan total natrium harian (Aman, Mendekati Batas, Bahaya).
 - Data riwayat konsumsi tetap tersimpan dan dapat ditampilkan kembali setelah aplikasi ditutup dan dibuka ulang.
 - Pengguna tetap dapat memasukkan natrium secara manual ketika produk tidak ditemukan di API atau aplikasi sedang offline.
-- Aplikasi dapat digunakan sepenuhnya tanpa akun, dengan seluruh data utama pengguna tersimpan secara lokal di perangkat.
+- Pengguna dapat mengubah dan menghapus catatan konsumsi, dan perubahannya tetap tersimpan setelah aplikasi dibuka ulang.
+- Riwayat konsumsi dapat dikirim ke SodiScan API dan dimuat kembali ke perangkat, dengan tampilan loading, kosong, error, dan coba lagi.
+- Notifikasi muncul ketika total natrium harian berubah menjadi Mendekati Batas atau Bahaya, setelah pengguna memberi izin notifikasi.
+- Aplikasi dapat dikunci dengan sidik jari, wajah, atau PIN HP, termasuk penanganan saat autentikasi dibatalkan.
+- Penolakan izin kamera atau notifikasi ditangani dengan pesan yang jelas dan alternatif yang tetap bisa dipakai.
+- Aplikasi dapat digunakan sepenuhnya tanpa akun dan tanpa server, dengan seluruh data utama pengguna tersimpan secara lokal di perangkat.

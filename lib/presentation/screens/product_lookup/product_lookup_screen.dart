@@ -11,19 +11,25 @@ import 'portion_form.dart';
 import 'product_info_card.dart';
 
 class ProductLookupScreen extends StatelessWidget {
-  const ProductLookupScreen({super.key});
+  const ProductLookupScreen({super.key, this.initialBarcode});
 
-  static Route<bool> route(BuildContext context) {
+  final String? initialBarcode;
+
+  static Route<bool> route(BuildContext context, {String? initialBarcode}) {
     final getProductByBarcode = context.read<GetProductByBarcode>();
     final recordConsumption = context.read<RecordConsumption>();
 
     return MaterialPageRoute<bool>(
       builder: (_) => ChangeNotifierProvider(
-        create: (_) => ProductLookupNotifier(
-          getProductByBarcode: getProductByBarcode,
-          recordConsumption: recordConsumption,
-        ),
-        child: const ProductLookupScreen(),
+        create: (_) {
+          final notifier = ProductLookupNotifier(
+            getProductByBarcode: getProductByBarcode,
+            recordConsumption: recordConsumption,
+          );
+          if (initialBarcode != null) notifier.search(initialBarcode);
+          return notifier;
+        },
+        child: ProductLookupScreen(initialBarcode: initialBarcode),
       ),
     );
   }
@@ -37,7 +43,7 @@ class ProductLookupScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const BarcodeSearchForm(),
+          BarcodeSearchForm(initialBarcode: initialBarcode),
           const SizedBox(height: 24),
           _LookupResult(state: state),
         ],
@@ -57,7 +63,7 @@ class _LookupResult extends StatelessWidget {
       LookupStatus.idle => const StateMessage(
           icon: Icons.qr_code_scanner,
           title: 'Cari Produk Kemasan',
-          message: 'Masukkan kode barcode untuk melihat kandungan natrium produk.',
+          message: 'Ketik kode barcode atau tekan ikon kamera untuk memindai kemasan.',
         ),
       LookupStatus.loading => const Padding(
           padding: EdgeInsets.all(24),

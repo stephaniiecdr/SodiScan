@@ -10,6 +10,7 @@ import 'package:sodiscan/domain/usecases/record_consumption.dart';
 import 'package:sodiscan/domain/usecases/update_consumption.dart';
 import 'package:sodiscan/presentation/providers/add_consumption_notifier.dart';
 import 'package:sodiscan/presentation/screens/home/home_screen.dart';
+import 'package:sodiscan/presentation/screens/scanner/scan_result.dart';
 
 import '../../../helpers/fake_consumption_repository.dart';
 import '../../../helpers/fake_product_repository.dart';
@@ -17,9 +18,15 @@ import '../../../helpers/fake_product_repository.dart';
 void main() {
   late FakeConsumptionRepository repository;
   late FakeProductRepository productRepository;
+  ScanResult? scanResult;
+
+  setUp(() {
+    productRepository = FakeProductRepository();
+    scanResult = null;
+  });
 
   Future<void> pumpHome(WidgetTester tester) async {
-    productRepository = FakeProductRepository();
+    productRepository = FakeProductRepository(product: productRepository.product);
     final recordConsumption = RecordConsumption(repository, clock: () => fixedNow);
     final notifier = AddConsumptionNotifier(
       getDailySummary: GetDailySummary(repository),
@@ -35,6 +42,7 @@ void main() {
           Provider.value(value: recordConsumption),
           Provider.value(value: GetProductByBarcode(productRepository)),
           Provider.value(value: GetConsumptionHistory(repository)),
+          Provider<ScanBarcode>.value(value: (_) async => scanResult),
           ChangeNotifierProvider.value(value: notifier..load()),
         ],
         child: const MaterialApp(home: HomeScreen()),
@@ -98,8 +106,9 @@ void main() {
     expect(find.text('Keripik Kentang'), findsOneWidget);
   });
 
-  testWidgets('tombol Pindai Barcode membuka Cari Produk, produk tidak ditemukan diarahkan ke Input Manual', (tester) async {
+  testWidgets('Pindai Barcode lalu pilih Ketik Barcode, produk tidak ditemukan diarahkan ke Input Manual', (tester) async {
     repository = FakeConsumptionRepository();
+    scanResult = const ScanResult.manualEntry();
     await pumpHome(tester);
 
     await tester.tap(find.byKey(const Key('scanBarcodeButton')));
@@ -116,5 +125,32 @@ void main() {
 
     expect(find.widgetWithText(AppBar, 'Input Manual'), findsOneWidget);
     expect(find.byKey(const Key('productNameField')), findsOneWidget);
+  });
+
+  testWidgets('kamera membaca barcode lalu Cari Produk langsung mencari produk tersebut', (tester) async {
+    repository = FakeConsumptionRepository();
+    productRepository.product = indomieProduct;
+    scanResult = const ScanResult.barcode('089686010947');
+    await pumpHome(tester);
+
+    await tester.tap(find.byKey(const Key('scanBarcodeButton')));
+    await tester.pumpAndSettle();
+
+    expect(productRepository.lastBarcode, '089686010947');
+    expect(find.widgetWithText(AppBar, 'Cari Produk'), findsOneWidget);
+    expect(find.text('Indomie Mi Goreng'), findsOneWidget);
+    expect(tester.widget<TextFormField>(find.byKey(const Key('barcodeField'))).controller!.text, '089686010947');
+  });
+
+  testWidgets('pemindaian dibatalkan tetap di Beranda dengan pesan', (tester) async {
+    repository = FakeConsumptionRepository();
+    await pumpHome(tester);
+
+    await tester.tap(find.byKey(const Key('scanBarcodeButton')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pemindaian dibatalkan.'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Cari Produk'), findsNothing);
+    expect(productRepository.lookupCalls, 0);
   });
 }

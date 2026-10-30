@@ -3,10 +3,13 @@ import 'package:provider/provider.dart';
 
 import '../../providers/product_lookup_notifier.dart';
 import '../../providers/product_lookup_state.dart';
+import '../scanner/scanner_screen.dart';
 import 'product_lookup_validators.dart';
 
 class BarcodeSearchForm extends StatefulWidget {
-  const BarcodeSearchForm({super.key});
+  const BarcodeSearchForm({super.key, this.initialBarcode});
+
+  final String? initialBarcode;
 
   @override
   State<BarcodeSearchForm> createState() => _BarcodeSearchFormState();
@@ -14,7 +17,7 @@ class BarcodeSearchForm extends StatefulWidget {
 
 class _BarcodeSearchFormState extends State<BarcodeSearchForm> {
   final _formKey = GlobalKey<FormState>();
-  final _barcodeController = TextEditingController();
+  late final _barcodeController = TextEditingController(text: widget.initialBarcode);
 
   @override
   void dispose() {
@@ -26,6 +29,14 @@ class _BarcodeSearchFormState extends State<BarcodeSearchForm> {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
     context.read<ProductLookupNotifier>().search(_barcodeController.text);
+  }
+
+  Future<void> _scan() async {
+    final result = await scanBarcode(context);
+    final barcode = result?.barcode;
+    if (!mounted || barcode == null) return;
+    _barcodeController.text = barcode;
+    _search();
   }
 
   @override
@@ -45,10 +56,16 @@ class _BarcodeSearchFormState extends State<BarcodeSearchForm> {
             keyboardType: TextInputType.number,
             textInputAction: TextInputAction.search,
             onFieldSubmitted: (_) => _search(),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Kode Barcode',
               helperText: 'Contoh: 089686010947',
-              prefixIcon: Icon(Icons.qr_code),
+              prefixIcon: const Icon(Icons.qr_code),
+              suffixIcon: IconButton(
+                key: const Key('scanCameraButton'),
+                tooltip: 'Pindai dengan kamera',
+                icon: const Icon(Icons.photo_camera_outlined),
+                onPressed: isBusy ? null : _scan,
+              ),
             ),
             validator: validateBarcode,
           ),

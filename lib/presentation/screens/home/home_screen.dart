@@ -13,7 +13,9 @@ import '../../widgets/state_message.dart';
 import '../add_consumption/add_consumption_screen.dart';
 import '../history/history_screen.dart';
 import '../product_lookup/product_lookup_screen.dart';
+import '../scanner/scanner_screen.dart';
 import '../server_sync/server_sync_screen.dart';
+import '../settings/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -37,6 +39,12 @@ class HomeScreen extends StatelessWidget {
             tooltip: 'Sinkronisasi Server',
             icon: const Icon(Icons.cloud_sync_outlined),
             onPressed: () => Navigator.of(context).push(ServerSyncScreen.route(context)),
+          ),
+          IconButton(
+            key: const Key('openSettingsButton'),
+            tooltip: 'Pengaturan',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => Navigator.of(context).push(SettingsScreen.route(context)),
           ),
         ],
       ),
@@ -202,7 +210,15 @@ class _ActionButtons extends StatelessWidget {
 Future<void> _openProductLookup(BuildContext context) async {
   final notifier = context.read<AddConsumptionNotifier>();
   final navigator = Navigator.of(context);
-  final saved = await navigator.push(ProductLookupScreen.route(context));
+  final messenger = ScaffoldMessenger.of(context);
+  final scan = await scanBarcode(context);
+  if (!context.mounted) return;
+  if (scan == null) {
+    messenger.showSnackBar(const SnackBar(content: Text('Pemindaian dibatalkan.')));
+    return;
+  }
+
+  final saved = await navigator.push(ProductLookupScreen.route(context, initialBarcode: scan.barcode));
   if (saved == true) {
     await notifier.refresh();
   } else if (saved == false) {

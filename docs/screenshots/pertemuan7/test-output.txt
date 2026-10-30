@@ -1,0 +1,49 @@
+00:00 +0: loading test/domain/send_sodium_alert_test.dart
+00:00 +0: test/domain/send_sodium_alert_test.dart: shouldAlert memberi peringatan hanya saat status naik ke Mendekati Batas atau Bahaya
+00:00 +1: test/domain/send_sodium_alert_test.dart: shouldAlert tidak memberi peringatan jika status tetap, turun, atau masih Aman
+00:00 +2: test/domain/send_sodium_alert_test.dart: shouldAlert tidak memberi peringatan saat pertama kali dibuka atau beda hari
+00:00 +3: test/domain/send_sodium_alert_test.dart: mengirim notifikasi Mendekati Batas dengan sisa batas
+00:00 +4: test/domain/send_sodium_alert_test.dart: mengirim notifikasi Bahaya dengan kelebihan batas
+00:00 +5: test/domain/send_sodium_alert_test.dart: tidak mengirim notifikasi jika pengguna mematikan peringatan
+00:00 +6: test/data/settings_repository_impl_test.dart: default semua fitur mati
+00:00 +7: test/data/settings_repository_impl_test.dart: pengaturan tetap tersimpan setelah aplikasi dibuka kembali
+00:00 +8: test/presentation/providers/app_lock_notifier_test.dart: kunci mati: aplikasi langsung terbuka tanpa autentikasi
+00:00 +9: test/presentation/providers/app_lock_notifier_test.dart: kunci aktif: autentikasi berhasil membuka aplikasi
+00:00 +10: test/presentation/providers/app_lock_notifier_test.dart: dibatalkan pengguna: tetap terkunci dengan pesan, lalu bisa dicoba lagi
+00:00 +11: test/presentation/providers/app_lock_notifier_test.dart: terlalu banyak percobaan dan gagal tetap terkunci dengan pesan berbeda
+00:00 +12: test/presentation/providers/app_lock_notifier_test.dart: kunci layar HP dihapus: kunci aplikasi dimatikan agar pengguna tidak terkunci permanen
+00:00 +13: test/presentation/providers/app_lock_notifier_test.dart: terkunci lagi setelah di latar belakang lebih lama dari batas waktu
+00:01 +14: test/presentation/providers/settings_notifier_test.dart: mengaktifkan peringatan meminta izin notifikasi lalu menyimpan
+00:01 +15: test/presentation/providers/settings_notifier_test.dart: izin notifikasi ditolak: switch tetap mati dan pesan arahan ditampilkan
+00:01 +16: test/presentation/providers/settings_notifier_test.dart: mematikan peringatan tidak meminta izin
+00:01 +17: test/presentation/providers/settings_notifier_test.dart: mengaktifkan kunci aplikasi butuh autentikasi berhasil
+00:01 +18: test/presentation/providers/settings_notifier_test.dart: autentikasi dibatalkan atau HP tanpa kunci layar: pengaturan tidak berubah
+00:01 +19: test/presentation/providers/settings_notifier_test.dart: gagal menyimpan menampilkan pesan error
+00:01 +20: test/presentation/providers/add_consumption_notifier_test.dart: state awal adalah loading
+00:01 +21: test/presentation/providers/add_consumption_notifier_test.dart: load menghasilkan success, empty, atau error sesuai hasil repository
+00:01 +22: test/presentation/providers/add_consumption_notifier_test.dart: submit kedua saat submit pertama berjalan diabaikan
+00:01 +23: test/presentation/providers/add_consumption_notifier_test.dart: submit gagal menyimpan pesan error dan mengembalikan isSubmitting ke false
+00:01 +24: test/presentation/providers/add_consumption_notifier_test.dart: delete menghapus konsumsi lalu menghitung ulang ringkasan harian
+00:01 +25: test/presentation/providers/add_consumption_notifier_test.dart: update mengubah konsumsi lalu ringkasan dihitung ulang
+00:01 +26: test/presentation/providers/add_consumption_notifier_test.dart: update gagal di storage menampilkan pesan error
+00:01 +27: test/presentation/providers/add_consumption_notifier_test.dart: notifikasi dikirim saat catatan baru membuat status naik ke Bahaya
+00:02 +28: test/presentation/screens/scanner/scanner_status_view_test.dart: Loading - menampilkan indikator saat kamera disiapkan
+00:02 +29: test/presentation/screens/lock/app_lock_gate_test.dart: kunci mati - Beranda langsung tampil
+00:02 +30: test/presentation/screens/lock/app_lock_gate_test.dart: kunci mati - Beranda langsung tampil
+00:03 +31: test/presentation/screens/lock/app_lock_gate_test.dart: kunci mati - Beranda langsung tampil
+00:03 +32: test/presentation/screens/lock/app_lock_gate_test.dart: kunci mati - Beranda langsung tampil
+00:03 +33: test/presentation/screens/lock/app_lock_gate_test.dart: menunggu autentikasi - layar kunci dengan loading menutupi Beranda
+00:03 +34: test/presentation/screens/lock/app_lock_gate_test.dart: dibatalkan - pesan tampil, tombol Buka Kunci membuka aplikasi
+00:03 +35: test/presentation/screens/lock/app_lock_gate_test.dart: HP tanpa kunci layar - aplikasi terbuka dengan pesan penjelasan
+00:04 +36: test/presentation/screens/settings/settings_screen_test.dart: menampilkan pengaturan tersimpan
+00:05 +37: test/presentation/screens/home/home_screen_test.dart: Beranda menampilkan tanggal, total, progres, sisa batas, dan tombol aksi
+00:05 +38: test/presentation/screens/home/home_screen_test.dart: Beranda menampilkan tanggal, total, progres, sisa batas, dan tombol aksi
+00:05 +39: test/presentation/screens/settings/settings_screen_test.dart: izin notifikasi ditolak - switch tetap mati dan arahan ditampilkan
+00:05 +40: test/presentation/screens/home/home_screen_test.dart: Beranda menampilkan kelebihan batas dan progres penuh saat status Bahaya
+00:05 +41: test/presentation/screens/settings/settings_screen_test.dart: kunci aplikasi dibatalkan - switch tetap mati
+00:06 +42: test/presentation/screens/home/home_screen_test.dart: tombol Input Manual membuka form, simpan kembali ke Beranda dengan total baru
+00:06 +43: test/presentation/screens/home/home_screen_test.dart: tombol Input Manual membuka form, simpan kembali ke Beranda dengan total baru
+00:06 +44: test/presentation/screens/home/home_screen_test.dart: Pindai Barcode lalu pilih Ketik Barcode, produk tidak ditemukan diarahkan ke Input Manual
+00:06 +45: test/presentation/screens/home/home_screen_test.dart: kamera membaca barcode lalu Cari Produk langsung mencari produk tersebut
+00:07 +46: test/presentation/screens/home/home_screen_test.dart: pemindaian dibatalkan tetap di Beranda dengan pesan
+00:07 +47: All tests passed!

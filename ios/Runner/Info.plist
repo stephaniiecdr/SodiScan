@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>SodiScan memakai kamera untuk memindai barcode kemasan makanan.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>SodiScan memakai Face ID untuk membuka kunci aplikasi.</string>
 </dict>
 </plist>
