@@ -11,11 +11,14 @@ class FakeConsumptionRepository implements ConsumptionRepository {
 
   bool failLoad = false;
   bool failSave = false;
+  bool failUpdate = false;
+  bool failDelete = false;
   Completer<void>? loadGate;
   Completer<void>? saveGate;
 
   int loadCalls = 0;
   int saveCalls = 0;
+  int updateCalls = 0;
 
   @override
   Future<List<FoodConsumption>> getConsumptionsByDate(DateTime date) async {
@@ -29,11 +32,35 @@ class FakeConsumptionRepository implements ConsumptionRepository {
   }
 
   @override
+  Future<List<FoodConsumption>> getAllConsumptions() async {
+    loadCalls++;
+    if (loadGate != null) await loadGate!.future;
+    if (failLoad) throw const StorageFailure('load failed');
+    return List.of(items);
+  }
+
+  @override
   Future<void> saveConsumption(FoodConsumption consumption) async {
     saveCalls++;
     if (saveGate != null) await saveGate!.future;
     if (failSave) throw const StorageFailure('save failed');
     items.add(consumption);
+  }
+
+  @override
+  Future<void> updateConsumption(FoodConsumption consumption) async {
+    updateCalls++;
+    if (saveGate != null) await saveGate!.future;
+    if (failUpdate) throw const StorageFailure('update failed');
+    final index = items.indexWhere((item) => item.id == consumption.id);
+    if (index < 0) throw const StorageFailure('not found');
+    items[index] = consumption;
+  }
+
+  @override
+  Future<void> deleteConsumption(String id) async {
+    if (failDelete) throw const StorageFailure('delete failed');
+    items.removeWhere((item) => item.id == id);
   }
 }
 

@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sodiscan/domain/usecases/delete_consumption.dart';
 import 'package:sodiscan/domain/usecases/get_daily_summary.dart';
 import 'package:sodiscan/domain/usecases/record_consumption.dart';
+import 'package:sodiscan/domain/usecases/update_consumption.dart';
 import 'package:sodiscan/presentation/providers/add_consumption_notifier.dart';
 import 'package:sodiscan/presentation/providers/add_consumption_state.dart';
 
@@ -13,6 +15,8 @@ void main() {
     return AddConsumptionNotifier(
       getDailySummary: GetDailySummary(repository),
       recordConsumption: RecordConsumption(repository, clock: () => fixedNow),
+      updateConsumption: UpdateConsumption(repository),
+      deleteConsumption: DeleteConsumption(repository),
       clock: () => fixedNow,
     );
   }
@@ -72,5 +76,48 @@ void main() {
     expect(notifier.state.isSubmitting, isFalse);
     expect(notifier.state.submitErrorMessage, AddConsumptionNotifier.submitErrorText);
     expect(notifier.state.loadStatus, LoadStatus.empty);
+  });
+
+  test('delete menghapus konsumsi lalu menghitung ulang ringkasan harian', () async {
+    final repository = FakeConsumptionRepository(items: [indomieConsumption()]);
+    final notifier = buildNotifier(repository);
+    await notifier.load();
+    expect(notifier.state.summary!.totalSodiumMg, 750);
+
+    expect(await notifier.delete('indomie-1'), isTrue);
+    expect(notifier.state.loadStatus, LoadStatus.empty);
+    expect(notifier.state.summary!.totalSodiumMg, 0);
+
+    repository
+      ..items.add(indomieConsumption())
+      ..failDelete = true;
+    await notifier.refresh();
+    expect(await notifier.delete('indomie-1'), isFalse);
+    expect(notifier.state.summary!.totalSodiumMg, 750);
+  });
+
+  test('update mengubah konsumsi lalu ringkasan dihitung ulang', () async {
+    final repository = FakeConsumptionRepository(items: [indomieConsumption()]);
+    final notifier = buildNotifier(repository);
+    await notifier.load();
+
+    final updated = await notifier.update(indomieConsumption(), productName: 'Indomie Soto', sodiumMg: 1800);
+
+    expect(updated, isTrue);
+    expect(notifier.state.isSubmitting, isFalse);
+    expect(notifier.state.summary!.totalSodiumMg, 1800);
+    expect(notifier.state.summary!.consumptions.single.productName, 'Indomie Soto');
+  });
+
+  test('update gagal di storage menampilkan pesan error', () async {
+    final repository = FakeConsumptionRepository(items: [indomieConsumption()])..failUpdate = true;
+    final notifier = buildNotifier(repository);
+    await notifier.load();
+
+    final updated = await notifier.update(indomieConsumption(), productName: 'Indomie Soto', sodiumMg: 800);
+
+    expect(updated, isFalse);
+    expect(notifier.state.submitErrorMessage, AddConsumptionNotifier.updateErrorText);
+    expect(notifier.state.summary!.totalSodiumMg, 750);
   });
 }

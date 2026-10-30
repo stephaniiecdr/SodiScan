@@ -26,7 +26,7 @@ void usePhoneView(WidgetTester tester) {
 }
 
 void captureTest(String description, Future<void> Function(WidgetTester tester) body) {
-  testWidgets(description, (tester) async {
+  testWidgets(skip: !autoUpdateGoldenFiles, description, (tester) async {
     debugDisableShadows = false;
     try {
       await body(tester);

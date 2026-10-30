@@ -1,3 +1,5 @@
+import '../../core/errors/failures.dart';
+
 enum ConsumptionUnit { serving, gram }
 
 class Product {
@@ -22,6 +24,9 @@ class Product {
   ConsumptionUnit get unit => sodiumPerServingMg != null ? ConsumptionUnit.serving : ConsumptionUnit.gram;
 
   double sodiumFor(double amount) {
+    if (!amount.isFinite || amount <= 0) {
+      throw const ValidationFailure('Jumlah porsi atau berat harus lebih dari 0.');
+    }
     if (sodiumPerServingMg != null) return sodiumPerServingMg! * amount;
     if (sodiumPer100gMg != null) return sodiumPer100gMg! * amount / 100;
     return 0;

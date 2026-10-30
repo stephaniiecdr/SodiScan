@@ -16,4 +16,15 @@ class FoodConsumption {
   final double sodiumMg;
   final ConsumptionSource source;
   final DateTime consumedAt;
+
+  FoodConsumption copyWith({String? productName, double? sodiumMg}) {
+    return FoodConsumption(
+      id: id,
+      barcode: barcode,
+      productName: productName ?? this.productName,
+      sodiumMg: sodiumMg ?? this.sodiumMg,
+      source: source,
+      consumedAt: consumedAt,
+    );
+  }
 }

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../domain/entities/food_consumption.dart';
 import '../../providers/add_consumption_notifier.dart';
 import 'consumption_form_validators.dart';
 
 class ConsumptionForm extends StatefulWidget {
-  const ConsumptionForm({super.key});
+  const ConsumptionForm({super.key, this.initial});
+
+  final FoodConsumption? initial;
 
   @override
   State<ConsumptionForm> createState() => _ConsumptionFormState();
@@ -13,8 +16,18 @@ class ConsumptionForm extends StatefulWidget {
 
 class _ConsumptionFormState extends State<ConsumptionForm> {
   final _formKey = GlobalKey<FormState>();
-  final _productNameController = TextEditingController();
-  final _sodiumController = TextEditingController();
+  late final _productNameController = TextEditingController(text: widget.initial?.productName);
+  late final _sodiumController = TextEditingController(text: widget.initial?.sodiumMg.round().toString());
+
+  bool get _isEditing => widget.initial != null;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<AddConsumptionNotifier>().clearSubmitError();
+    });
+  }
 
   @override
   void dispose() {
@@ -28,10 +41,11 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
     if (notifier.state.isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
 
-    final saved = await notifier.submit(
-      productName: _productNameController.text,
-      sodiumMg: parseSodiumMg(_sodiumController.text)!.toDouble(),
-    );
+    final productName = _productNameController.text;
+    final sodiumMg = parseSodiumMg(_sodiumController.text)!.toDouble();
+    final saved = _isEditing
+        ? await notifier.update(widget.initial!, productName: productName, sodiumMg: sodiumMg)
+        : await notifier.submit(productName: productName, sodiumMg: sodiumMg);
     if (!mounted || !saved) return;
 
     _formKey.currentState!.reset();
@@ -39,8 +53,9 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
     _sodiumController.clear();
     FocusScope.of(context).unfocus();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Konsumsi berhasil disimpan.')),
+      SnackBar(content: Text(_isEditing ? 'Perubahan berhasil disimpan.' : 'Konsumsi berhasil disimpan.')),
     );
+    await Navigator.of(context).maybePop(true);
   }
 
   @override
@@ -53,7 +68,7 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Catat Konsumsi', style: Theme.of(context).textTheme.titleMedium),
+          Text(_isEditing ? 'Ubah Konsumsi' : 'Catat Konsumsi', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           TextFormField(
             key: const Key('productNameField'),
@@ -96,7 +111,7 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
                       Text('Menyimpan...'),
                     ],
                   )
-                : const Text('Simpan Konsumsi'),
+                : Text(_isEditing ? 'Simpan Perubahan' : 'Simpan Konsumsi'),
           ),
         ],
       ),

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:sodiscan/core/theme/app_theme.dart';
+import 'package:sodiscan/domain/usecases/delete_consumption.dart';
 import 'package:sodiscan/domain/usecases/get_daily_summary.dart';
 import 'package:sodiscan/domain/usecases/record_consumption.dart';
+import 'package:sodiscan/domain/usecases/update_consumption.dart';
 import 'package:sodiscan/presentation/providers/add_consumption_notifier.dart';
 import 'package:sodiscan/presentation/screens/add_consumption/add_consumption_screen.dart';
 
@@ -24,6 +26,8 @@ void main() {
     notifier = AddConsumptionNotifier(
       getDailySummary: GetDailySummary(repository),
       recordConsumption: RecordConsumption(repository, clock: () => fixedNow),
+      updateConsumption: UpdateConsumption(repository),
+      deleteConsumption: DeleteConsumption(repository),
       clock: () => fixedNow,
     );
     await tester.pumpWidget(

@@ -1,0 +1,18 @@
+00:00 +0: loading test/data/consumption_persistence_test.dart
+00:00 +0: test/data/consumption_persistence_test.dart: Create: data tetap ada setelah aplikasi ditutup dan dibuka kembali
+00:00 +1: test/data/consumption_repository_impl_test.dart: menyimpan konsumsi ke Hive dan membacanya kembali per tanggal
+00:00 +2: test/data/consumption_repository_impl_test.dart: menyimpan konsumsi ke Hive dan membacanya kembali per tanggal
+00:00 +3: test/data/consumption_repository_impl_test.dart: menyimpan konsumsi ke Hive dan membacanya kembali per tanggal
+00:00 +4: test/data/consumption_repository_impl_test.dart: membaca seluruh riwayat konsumsi dari Hive
+00:00 +5: test/data/consumption_repository_impl_test.dart: menghapus konsumsi dari Hive berdasarkan id
+00:00 +6: test/data/consumption_repository_impl_test.dart: mengubah nama dan sodium konsumsi tanpa mengubah id dan waktu
+00:00 +7: test/data/consumption_repository_impl_test.dart: mengubah konsumsi yang tidak ada menghasilkan StorageFailure
+00:00 +8: test/domain/update_consumption_test.dart: mengubah nama (di-trim) dan sodium tanpa mengubah id, sumber, dan waktu
+00:00 +9: test/domain/update_consumption_test.dart: menolak input tidak valid tanpa memanggil repository
+00:00 +10: test/presentation/screens/add_consumption/edit_consumption_test.dart: form edit terisi data lama lalu perubahan tampil di Beranda
+00:02 +11: test/presentation/screens/add_consumption/edit_consumption_test.dart: form edit terisi data lama lalu perubahan tampil di Beranda
+00:03 +12: test/presentation/screens/add_consumption/edit_consumption_test.dart: form edit terisi data lama lalu perubahan tampil di Beranda
+00:03 +13: test/presentation/screens/add_consumption/edit_consumption_test.dart: form edit terisi data lama lalu perubahan tampil di Beranda
+00:03 +14: test/presentation/screens/add_consumption/delete_consumption_test.dart: gagal menghapus menampilkan pesan error dan data tetap ada
+00:04 +15: test/presentation/screens/add_consumption/edit_consumption_test.dart: validasi form edit mencegah sodium kosong
+00:04 +16: All tests passed!
