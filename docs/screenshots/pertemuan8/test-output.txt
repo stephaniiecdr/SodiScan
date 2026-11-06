@@ -1,0 +1,33 @@
+00:00 +0: loading test/presentation/ux/accessibility_test.dart
+00:00 +0: test/presentation/ux/accessibility_test.dart: Beranda memenuhi guideline ukuran tombol, label, dan kontras teks
+00:00 +1: test/presentation/ux/action_feedback_test.dart: Kirim ke Server - tombol yang ditekan berubah jadi "Mengirim..." lalu muncul hasil
+00:00 +2: test/presentation/ux/action_feedback_test.dart: Kirim ke Server - tombol yang ditekan berubah jadi "Mengirim..." lalu muncul hasil
+00:00 +3: test/presentation/ux/action_feedback_test.dart: Kirim ke Server - tombol yang ditekan berubah jadi "Mengirim..." lalu muncul hasil
+00:01 +4: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:01 +5: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:01 +6: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:01 +7: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:01 +8: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:01 +9: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:01 +10: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:01 +11: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Validasi barcode - menolak kosong, bukan angka, dan panjang salah
+00:01 +12: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Validasi barcode - menolak kosong, bukan angka, dan panjang salah
+00:01 +13: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Validasi barcode - menolak kosong, bukan angka, dan panjang salah
+00:01 +14: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Validasi barcode - menolak kosong, bukan angka, dan panjang salah
+00:01 +15: test/presentation/ux/accessibility_test.dart: teks diperbesar 200% - tidak overflow dan tombol aksi disusun vertikal
+00:01 +16: test/presentation/ux/accessibility_test.dart: teks diperbesar 200% - tidak overflow dan tombol aksi disusun vertikal
+00:01 +17: test/presentation/ux/accessibility_test.dart: teks diperbesar 200% - tidak overflow dan tombol aksi disusun vertikal
+00:01 +18: test/presentation/ux/keyboard_safe_test.dart: tombol Next di keyboard pindah ke field sodium, Done langsung menyimpan
+00:01 +19: test/presentation/ux/keyboard_safe_test.dart: tombol Next di keyboard pindah ke field sodium, Done langsung menyimpan
+00:01 +20: test/presentation/ux/keyboard_safe_test.dart: tombol Next di keyboard pindah ke field sodium, Done langsung menyimpan
+00:01 +21: test/presentation/ux/keyboard_safe_test.dart: tombol Next di keyboard pindah ke field sodium, Done langsung menyimpan
+00:01 +22: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Success - menampilkan data produk dan form porsi
+00:01 +23: test/presentation/ux/keyboard_safe_test.dart: validasi gagal memfokuskan field pertama yang salah agar terlihat
+00:02 +24: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Empty - produk tidak ditemukan dan produk tanpa data natrium
+00:02 +25: test/presentation/ux/keyboard_safe_test.dart: tap di luar field menutup keyboard
+00:02 +26: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Error + Retry - tombol Coba Lagi mencari ulang barcode yang sama
+00:02 +27: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Validasi porsi - menolak kosong, bukan angka, dan nol
+00:02 +28: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Perhitungan natrium - memakai data per 100 g untuk produk tanpa data per saji
+00:02 +29: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Submit loading - tombol nonaktif, double tap dicegah, lalu kembali dengan hasil true
+00:03 +30: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Submit error - pesan gagal tampil dan form tetap bisa digunakan
+00:03 +31: All tests passed!

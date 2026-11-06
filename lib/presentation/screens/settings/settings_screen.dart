@@ -5,6 +5,7 @@ import '../../../domain/repositories/settings_repository.dart';
 import '../../../domain/services/device_authenticator.dart';
 import '../../../domain/services/notification_service.dart';
 import '../../providers/settings_notifier.dart';
+import '../../widgets/adaptive_layout.dart';
 import '../../widgets/state_message.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -51,8 +52,10 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 )
               : ListView(
+                  padding: adaptivePadding(context, base: 0),
                   children: [
-                    if (notifier.isBusy) const LinearProgressIndicator(key: Key('settingsBusy')),
+                    if (notifier.isBusy)
+                      const LinearProgressIndicator(key: Key('settingsBusy'), semanticsLabel: 'Menyimpan pengaturan'),
                     SwitchListTile(
                       key: const Key('sodiumAlertSwitch'),
                       secondary: const Icon(Icons.notifications_active_outlined),

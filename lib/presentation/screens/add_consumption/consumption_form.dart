@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../domain/entities/food_consumption.dart';
 import '../../providers/add_consumption_notifier.dart';
+import '../../widgets/keyboard_safe.dart';
 import 'consumption_form_validators.dart';
 
 class ConsumptionForm extends StatefulWidget {
@@ -18,6 +20,8 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
   final _formKey = GlobalKey<FormState>();
   late final _productNameController = TextEditingController(text: widget.initial?.productName);
   late final _sodiumController = TextEditingController(text: widget.initial?.sodiumMg.round().toString());
+  final _productNameFocus = FocusNode();
+  final _sodiumFocus = FocusNode();
 
   bool get _isEditing => widget.initial != null;
 
@@ -33,13 +37,18 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
   void dispose() {
     _productNameController.dispose();
     _sodiumController.dispose();
+    _productNameFocus.dispose();
+    _sodiumFocus.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     final notifier = context.read<AddConsumptionNotifier>();
     if (notifier.state.isSubmitting) return;
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      _focusFirstInvalidField();
+      return;
+    }
 
     final productName = _productNameController.text;
     final sodiumMg = parseSodiumMg(_sodiumController.text)!.toDouble();
@@ -52,10 +61,16 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
     _productNameController.clear();
     _sodiumController.clear();
     FocusScope.of(context).unfocus();
+    HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(_isEditing ? 'Perubahan berhasil disimpan.' : 'Konsumsi berhasil disimpan.')),
     );
     await Navigator.of(context).maybePop(true);
+  }
+
+  void _focusFirstInvalidField() {
+    final invalid = validateProductName(_productNameController.text) != null ? _productNameFocus : _sodiumFocus;
+    invalid.requestFocus();
   }
 
   @override
@@ -68,13 +83,21 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(_isEditing ? 'Ubah Konsumsi' : 'Catat Konsumsi', style: Theme.of(context).textTheme.titleMedium),
+          Semantics(
+            header: true,
+            child: Text(_isEditing ? 'Ubah Konsumsi' : 'Catat Konsumsi', style: Theme.of(context).textTheme.titleMedium),
+          ),
           const SizedBox(height: 12),
           TextFormField(
             key: const Key('productNameField'),
             controller: _productNameController,
+            focusNode: _productNameFocus,
             enabled: !isSubmitting,
+            textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.next,
+            onFieldSubmitted: (_) => _sodiumFocus.requestFocus(),
+            onTapOutside: dismissKeyboard,
+            scrollPadding: fieldScrollPadding,
             decoration: const InputDecoration(labelText: 'Nama Makanan'),
             validator: validateProductName,
           ),
@@ -82,8 +105,13 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
           TextFormField(
             key: const Key('sodiumField'),
             controller: _sodiumController,
+            focusNode: _sodiumFocus,
             enabled: !isSubmitting,
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _submit(),
+            onTapOutside: dismissKeyboard,
+            scrollPadding: fieldScrollPadding,
             decoration: const InputDecoration(
               labelText: 'Jumlah Sodium',
               helperText: 'Angka bulat, contoh: 750',
@@ -93,9 +121,13 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
           ),
           if (state.submitErrorMessage != null) ...[
             const SizedBox(height: 12),
-            Text(
-              state.submitErrorMessage!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                state.submitErrorMessage!,
+                key: const Key('submitErrorText'),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ),
           ],
           const SizedBox(height: 16),

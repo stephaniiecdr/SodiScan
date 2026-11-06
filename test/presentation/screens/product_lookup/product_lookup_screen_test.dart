@@ -95,8 +95,9 @@ void main() {
 
     await searchBarcode(tester, '089686010947');
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNWidgets(2));
     expect(find.text('Mencari produk...'), findsOneWidget);
+    expect(find.text('Mencari...'), findsOneWidget);
     expect(tester.widget<ButtonStyleButton>(byKey('searchButton')).onPressed, isNull);
 
     productRepository.lookupGate!.complete();

@@ -22,21 +22,28 @@ class StateMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 48, color: Theme.of(context).colorScheme.outline),
-          const SizedBox(height: 12),
-          Text(title, style: textTheme.titleMedium, textAlign: TextAlign.center),
-          const SizedBox(height: 4),
-          Text(message, style: textTheme.bodyMedium, textAlign: TextAlign.center),
-          if (actionLabel != null && onAction != null) ...[
-            const SizedBox(height: 16),
-            OutlinedButton.icon(onPressed: onAction, icon: Icon(actionIcon), label: Text(actionLabel!)),
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 48, color: Theme.of(context).colorScheme.outline),
+            const SizedBox(height: 12),
+            Semantics(
+              header: true,
+              child: Text(title, style: textTheme.titleMedium, textAlign: TextAlign.center),
+            ),
+            const SizedBox(height: 4),
+            Text(message, style: textTheme.bodyMedium, textAlign: TextAlign.center),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(onPressed: onAction, icon: Icon(actionIcon), label: Text(actionLabel!)),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

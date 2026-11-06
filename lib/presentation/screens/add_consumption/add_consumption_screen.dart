@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../domain/entities/food_consumption.dart';
+import '../../widgets/adaptive_layout.dart';
 import 'consumption_form.dart';
 
 class AddConsumptionScreen extends StatelessWidget {
@@ -17,7 +18,8 @@ class AddConsumptionScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(consumption == null ? 'Input Manual' : 'Edit Konsumsi')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: adaptivePadding(context),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         children: [
           Text(
             consumption == null

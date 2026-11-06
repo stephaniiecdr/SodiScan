@@ -6,6 +6,8 @@ import '../../../domain/usecases/sync_consumptions.dart';
 import '../../providers/add_consumption_notifier.dart';
 import '../../providers/add_consumption_state.dart';
 import '../../providers/server_sync_notifier.dart';
+import '../../providers/server_sync_state.dart';
+import '../../widgets/adaptive_layout.dart';
 import '../../widgets/consumption_tile.dart';
 import '../../widgets/state_message.dart';
 
@@ -32,7 +34,7 @@ class ServerSyncScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Sinkronisasi Server')),
       body: Column(
         children: [
-          _SyncActions(isSyncing: state.isSyncing),
+          _SyncActions(activeSync: state.activeSync),
           const Divider(height: 1),
           Expanded(
             child: switch (state.status) {
@@ -61,7 +63,8 @@ class ServerSyncScreen extends StatelessWidget {
               LoadStatus.success => RefreshIndicator(
                   onRefresh: context.read<ServerSyncNotifier>().load,
                   child: ListView(
-                    padding: const EdgeInsets.all(16),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: adaptivePadding(context),
                     children: [
                       Text(
                         '${state.items.length} catatan tersimpan di server',
@@ -85,9 +88,11 @@ class ServerSyncScreen extends StatelessWidget {
 }
 
 class _SyncActions extends StatelessWidget {
-  const _SyncActions({required this.isSyncing});
+  const _SyncActions({required this.activeSync});
 
-  final bool isSyncing;
+  final SyncAction? activeSync;
+
+  bool get isSyncing => activeSync != null;
 
   Future<void> _run(BuildContext context, {required bool upload}) async {
     final notifier = context.read<ServerSyncNotifier>();
@@ -102,36 +107,46 @@ class _SyncActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const spinner = SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2));
+    final isUploading = activeSync == SyncAction.upload;
+    final isRestoring = activeSync == SyncAction.restore;
+    final upload = FilledButton.icon(
+      key: const Key('uploadButton'),
+      onPressed: isSyncing ? null : () => _run(context, upload: true),
+      icon: isUploading ? spinner : const Icon(Icons.cloud_upload_outlined),
+      label: Text(isUploading ? 'Mengirim...' : 'Kirim ke Server'),
+    );
+    final restore = OutlinedButton.icon(
+      key: const Key('restoreButton'),
+      onPressed: isSyncing ? null : () => _run(context, upload: false),
+      icon: isRestoring ? spinner : const Icon(Icons.cloud_download_outlined),
+      label: Text(isRestoring ? 'Mengambil...' : 'Ambil ke HP'),
+    );
+
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: adaptivePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (isSyncing) ...[
-            const LinearProgressIndicator(key: Key('syncProgress')),
+            LinearProgressIndicator(
+              key: const Key('syncProgress'),
+              semanticsLabel: isUploading ? 'Mengirim catatan ke server' : 'Mengambil catatan dari server',
+            ),
             const SizedBox(height: 12),
           ],
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  key: const Key('uploadButton'),
-                  onPressed: isSyncing ? null : () => _run(context, upload: true),
-                  icon: const Icon(Icons.cloud_upload_outlined),
-                  label: const Text('Kirim ke Server'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  key: const Key('restoreButton'),
-                  onPressed: isSyncing ? null : () => _run(context, upload: false),
-                  icon: const Icon(Icons.cloud_download_outlined),
-                  label: const Text('Ambil ke HP'),
-                ),
-              ),
-            ],
-          ),
+          if (isLargeText(context)) ...[
+            upload,
+            const SizedBox(height: 12),
+            restore,
+          ] else
+            Row(
+              children: [
+                Expanded(child: upload),
+                const SizedBox(width: 12),
+                Expanded(child: restore),
+              ],
+            ),
         ],
       ),
     );

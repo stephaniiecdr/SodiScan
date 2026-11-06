@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 
@@ -39,6 +42,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       final code = barcode.rawValue?.trim();
       if (code != null && validateBarcode(code) == null) {
         _handled = true;
+        HapticFeedback.mediumImpact();
         Navigator.of(context).pop(ScanResult.barcode(code));
         return;
       }
@@ -54,11 +58,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
       appBar: AppBar(
         title: const Text('Pindai Barcode'),
         actions: [
-          IconButton(
-            key: const Key('torchButton'),
-            tooltip: 'Senter',
-            icon: const Icon(Icons.flashlight_on_outlined),
-            onPressed: _controller.toggleTorch,
+          ValueListenableBuilder<MobileScannerState>(
+            valueListenable: _controller,
+            builder: (_, scanner, _) => TorchButton(torchState: scanner.torchState, onPressed: _controller.toggleTorch),
           ),
         ],
       ),
@@ -95,17 +97,41 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 }
 
+class TorchButton extends StatelessWidget {
+  const TorchButton({super.key, required this.torchState, required this.onPressed});
+
+  final TorchState torchState;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final isOn = torchState == TorchState.on;
+    final isUnavailable = torchState == TorchState.unavailable;
+
+    return IconButton(
+      key: const Key('torchButton'),
+      tooltip: isUnavailable ? 'Senter tidak tersedia' : isOn ? 'Matikan senter' : 'Nyalakan senter',
+      isSelected: isOn,
+      icon: const Icon(Icons.flashlight_off_outlined),
+      selectedIcon: const Icon(Icons.flashlight_on),
+      onPressed: isUnavailable ? null : onPressed,
+    );
+  }
+}
+
 class _ScanFrame extends StatelessWidget {
   const _ScanFrame();
 
   @override
   Widget build(BuildContext context) {
+    final frameWidth = math.min(280.0, MediaQuery.sizeOf(context).width - 64);
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 280,
+            width: frameWidth,
             height: 160,
             decoration: BoxDecoration(
               border: Border.all(color: Colors.white, width: 3),

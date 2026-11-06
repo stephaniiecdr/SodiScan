@@ -67,37 +67,46 @@ class LockScreen extends StatelessWidget {
       color: theme.colorScheme.surface,
       child: SafeArea(
         child: Center(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.lock_outline, size: 64, color: theme.colorScheme.primary),
-                const SizedBox(height: 16),
-                Text('SodiScan Terkunci', style: theme.textTheme.headlineSmall),
-                const SizedBox(height: 8),
-                Text(
-                  lock.message ?? 'Gunakan sidik jari, wajah, atau PIN HP untuk membuka aplikasi.',
-                  key: const Key('lockMessage'),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                if (isBusy)
-                  const Column(
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 12),
-                      Text('Menunggu autentikasi...'),
-                    ],
-                  )
-                else
-                  FilledButton.icon(
-                    key: const Key('unlockButton'),
-                    onPressed: lock.unlock,
-                    icon: const Icon(Icons.fingerprint),
-                    label: const Text('Buka Kunci'),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.lock_outline, size: 64, color: theme.colorScheme.primary),
+                  const SizedBox(height: 16),
+                  Semantics(
+                    header: true,
+                    child: Text('SodiScan Terkunci', style: theme.textTheme.headlineSmall, textAlign: TextAlign.center),
                   ),
-              ],
+                  const SizedBox(height: 8),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      lock.message ?? 'Gunakan sidik jari, wajah, atau PIN HP untuk membuka aplikasi.',
+                      key: const Key('lockMessage'),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  if (isBusy)
+                    const Column(
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 12),
+                        Text('Menunggu autentikasi...'),
+                      ],
+                    )
+                  else
+                    FilledButton.icon(
+                      key: const Key('unlockButton'),
+                      onPressed: lock.unlock,
+                      icon: const Icon(Icons.fingerprint),
+                      label: const Text('Buka Kunci'),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

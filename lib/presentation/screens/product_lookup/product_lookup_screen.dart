@@ -5,6 +5,7 @@ import '../../../domain/usecases/get_product_by_barcode.dart';
 import '../../../domain/usecases/record_consumption.dart';
 import '../../providers/product_lookup_notifier.dart';
 import '../../providers/product_lookup_state.dart';
+import '../../widgets/adaptive_layout.dart';
 import '../../widgets/state_message.dart';
 import 'barcode_search_form.dart';
 import 'portion_form.dart';
@@ -38,16 +39,33 @@ class ProductLookupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<ProductLookupNotifier>().state;
 
+    final searchForm = BarcodeSearchForm(initialBarcode: initialBarcode);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Cari Produk')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          BarcodeSearchForm(initialBarcode: initialBarcode),
-          const SizedBox(height: 24),
-          _LookupResult(state: state),
-        ],
-      ),
+      body: isExpandedWidth(context)
+          ? TwoPaneLayout(
+              key: const Key('lookupTwoPane'),
+              primary: ListView(
+                padding: const EdgeInsets.all(16),
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                children: [searchForm],
+              ),
+              secondary: ListView(
+                padding: const EdgeInsets.all(16),
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                children: [_LookupResult(state: state)],
+              ),
+            )
+          : ListView(
+              padding: adaptivePadding(context),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              children: [
+                searchForm,
+                const SizedBox(height: 24),
+                _LookupResult(state: state),
+              ],
+            ),
     );
   }
 }
@@ -65,14 +83,17 @@ class _LookupResult extends StatelessWidget {
           title: 'Cari Produk Kemasan',
           message: 'Ketik kode barcode atau tekan ikon kamera untuk memindai kemasan.',
         ),
-      LookupStatus.loading => const Padding(
-          padding: EdgeInsets.all(24),
-          child: Column(
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 12),
-              Text('Mencari produk...'),
-            ],
+      LookupStatus.loading => Padding(
+          padding: const EdgeInsets.all(24),
+          child: Semantics(
+            liveRegion: true,
+            child: const Column(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 12),
+                Text('Mencari produk...'),
+              ],
+            ),
           ),
         ),
       LookupStatus.empty => StateMessage(

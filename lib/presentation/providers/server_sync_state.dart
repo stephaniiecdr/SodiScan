@@ -1,31 +1,36 @@
 import '../../domain/entities/food_consumption.dart';
 import 'add_consumption_state.dart';
 
+enum SyncAction { upload, restore }
+
 class ServerSyncState {
   const ServerSyncState({
     this.status = LoadStatus.loading,
     this.items = const [],
     this.errorMessage,
-    this.isSyncing = false,
+    this.activeSync,
   });
 
   final LoadStatus status;
   final List<FoodConsumption> items;
   final String? errorMessage;
-  final bool isSyncing;
+  final SyncAction? activeSync;
+
+  bool get isSyncing => activeSync != null;
 
   ServerSyncState copyWith({
     LoadStatus? status,
     List<FoodConsumption>? items,
     String? errorMessage,
-    bool? isSyncing,
+    SyncAction? activeSync,
     bool clearError = false,
+    bool clearActiveSync = false,
   }) {
     return ServerSyncState(
       status: status ?? this.status,
       items: items ?? this.items,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
-      isSyncing: isSyncing ?? this.isSyncing,
+      activeSync: clearActiveSync ? null : activeSync ?? this.activeSync,
     );
   }
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/utils/sodium_format.dart';
 import '../../../domain/entities/product.dart';
 import '../../providers/product_lookup_notifier.dart';
+import '../../widgets/keyboard_safe.dart';
 import 'product_lookup_validators.dart';
 
 class PortionForm extends StatefulWidget {
@@ -18,6 +20,7 @@ class PortionForm extends StatefulWidget {
 class _PortionFormState extends State<PortionForm> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
+  final _amountFocus = FocusNode();
 
   @override
   void initState() {
@@ -28,19 +31,24 @@ class _PortionFormState extends State<PortionForm> {
   @override
   void dispose() {
     _amountController.dispose();
+    _amountFocus.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     final notifier = context.read<ProductLookupNotifier>();
     if (notifier.state.isSubmitting) return;
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      _amountFocus.requestFocus();
+      return;
+    }
 
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     final saved = await notifier.submit(parseAmount(_amountController.text)!);
     if (!mounted || !saved) return;
 
+    HapticFeedback.lightImpact();
     messenger.showSnackBar(const SnackBar(content: Text('Konsumsi berhasil disimpan.')));
     navigator.pop(true);
   }
@@ -58,13 +66,18 @@ class _PortionFormState extends State<PortionForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Catat Konsumsi', style: Theme.of(context).textTheme.titleMedium),
+          Semantics(header: true, child: Text('Catat Konsumsi', style: Theme.of(context).textTheme.titleMedium)),
           const SizedBox(height: 12),
           TextFormField(
             key: const Key('amountField'),
             controller: _amountController,
+            focusNode: _amountFocus,
             enabled: !isSubmitting,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _submit(),
+            onTapOutside: dismissKeyboard,
+            scrollPadding: fieldScrollPadding,
             decoration: InputDecoration(
               labelText: unit == ConsumptionUnit.serving ? 'Jumlah Porsi' : 'Berat Dikonsumsi',
               suffixText: unit == ConsumptionUnit.serving ? 'porsi' : 'g',
@@ -75,14 +88,20 @@ class _PortionFormState extends State<PortionForm> {
             validator: (value) => validateAmount(value, unit),
           ),
           const SizedBox(height: 12),
-          Text(
-            preview == null ? 'Perkiraan natrium: -' : 'Perkiraan natrium: ${formatSodiumMg(preview)}',
-            key: const Key('sodiumPreviewText'),
-            style: Theme.of(context).textTheme.titleSmall,
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              preview == null ? 'Perkiraan natrium: -' : 'Perkiraan natrium: ${formatSodiumMg(preview)}',
+              key: const Key('sodiumPreviewText'),
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
           ),
           if (state.submitErrorMessage != null) ...[
             const SizedBox(height: 12),
-            Text(state.submitErrorMessage!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            Semantics(
+              liveRegion: true,
+              child: Text(state.submitErrorMessage!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            ),
           ],
           const SizedBox(height: 16),
           FilledButton(

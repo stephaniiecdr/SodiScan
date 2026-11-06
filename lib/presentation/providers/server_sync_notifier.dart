@@ -38,26 +38,26 @@ class ServerSyncNotifier extends ChangeNotifier {
 
   Future<void> retry() => load();
 
-  Future<String> upload() => _sync(() async {
+  Future<String> upload() => _sync(SyncAction.upload, () async {
         final count = await _uploadConsumptions();
         await load();
         return '$count catatan dikirim ke server.';
       });
 
-  Future<String> restore() => _sync(() async {
+  Future<String> restore() => _sync(SyncAction.restore, () async {
         final count = await _restoreConsumptions();
         return '$count catatan dari server disimpan ke perangkat.';
       });
 
-  Future<String> _sync(Future<String> Function() action) async {
+  Future<String> _sync(SyncAction syncAction, Future<String> Function() action) async {
     if (_state.isSyncing) return '';
-    _emit(_state.copyWith(isSyncing: true));
+    _emit(_state.copyWith(activeSync: syncAction));
     try {
       return await action();
     } on Exception catch (error) {
       return messageFor(error);
     } finally {
-      _emit(_state.copyWith(isSyncing: false));
+      _emit(_state.copyWith(clearActiveSync: true));
     }
   }
 
