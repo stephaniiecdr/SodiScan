@@ -1,0 +1,70 @@
+00:00 +0: loading test/domain/validation/consumption_rules_test.dart
+00:00 +0: test/domain/validation/consumption_rules_test.dart: validateSodiumMg menerima nilai 1 sampai 10000 mg
+00:00 +1: test/domain/validation/consumption_rules_test.dart: validateSodiumMg menolak nilai di atas 10000 mg
+00:00 +2: test/domain/validation/consumption_rules_test.dart: validateSodiumMg menolak kosong, bukan angka, dan nol atau negatif
+00:00 +3: test/domain/validation/consumption_rules_test.dart: validateProductName menolak nama kosong dan menerima nama berisi
+00:00 +4: test/domain/validation/product_rules_test.dart: input_rules parseDecimal menerima koma sebagai pemisah desimal dan menolak bukan angka
+00:00 +5: test/domain/validation/product_rules_test.dart: input_rules validatePositiveNumber memakai label yang sama untuk semua pesan
+00:00 +6: test/domain/validation/product_rules_test.dart: validateBarcode menerima 8 sampai 13 digit
+00:00 +7: test/domain/validation/product_rules_test.dart: validateBarcode menolak kosong, huruf, dan panjang salah
+00:00 +8: test/domain/validation/product_rules_test.dart: validateAmount label mengikuti satuan produk
+00:00 +9: test/domain/validation/product_rules_test.dart: validateConsumptionInput (dipakai use case) memakai pesan yang sama dengan validator form
+00:00 +10: test/presentation/providers/base_notifier_test.dart: StateNotifier emit mengganti state dan memberi tahu listener
+00:00 +11: test/presentation/providers/base_notifier_test.dart: StateNotifier emit setelah dispose diabaikan tanpa error
+00:00 +12: test/presentation/providers/base_notifier_test.dart: runSubmit mengembalikan null jika aksi berhasil
+00:00 +13: test/presentation/providers/base_notifier_test.dart: runSubmit mengembalikan pesan ValidationFailure apa adanya
+00:00 +14: test/presentation/providers/base_notifier_test.dart: runSubmit mengembalikan pesan cadangan untuk exception lain
+00:00 +15: test/data/repository_guard_test.dart: guardStorage meneruskan hasil jika berhasil
+00:00 +16: test/data/repository_guard_test.dart: guardStorage mengubah error apa pun menjadi StorageFailure
+00:00 +17: test/data/repository_guard_test.dart: guardStorage Failure yang sudah spesifik tidak dibungkus ulang
+00:00 +18: test/data/repository_guard_test.dart: guardRemote JSON rusak menjadi DataFormatFailure
+00:00 +19: test/data/repository_guard_test.dart: guardRemote timeout dan error lain menjadi NetworkFailure
+00:00 +20: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 1. Model valid: JSON lengkap diubah menjadi model dan entity
+00:00 +21: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 2. Model invalid: field wajib hilang atau salah tipe ditolak dengan FormatException
+00:00 +22: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 3. API sukses: GET memuat daftar dan PUT mengirim JSON ke endpoint yang benar
+00:00 +23: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 4. Data kosong: server mengembalikan daftar kosong
+00:00 +24: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 5. HTTP gagal: status 500, offline, dan timeout menjadi NetworkFailure
+00:00 +25: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 6. JSON rusak: body bukan JSON, tanpa "data", atau item tidak valid menjadi DataFormatFailure
+00:00 +26: test/data/consumption_persistence_test.dart: Create: data tetap ada setelah aplikasi ditutup dan dibuka kembali
+00:00 +27: test/data/consumption_persistence_test.dart: Update: perubahan tetap tersimpan setelah aplikasi dibuka kembali
+00:00 +28: test/data/consumption_repository_impl_test.dart: menyimpan konsumsi ke Hive dan membacanya kembali per tanggal
+00:00 +29: test/data/consumption_repository_impl_test.dart: menyimpan konsumsi ke Hive dan membacanya kembali per tanggal
+00:00 +30: test/data/consumption_repository_impl_test.dart: membaca seluruh riwayat konsumsi dari Hive
+00:00 +31: test/data/consumption_repository_impl_test.dart: menghapus konsumsi dari Hive berdasarkan id
+00:00 +32: test/data/consumption_repository_impl_test.dart: mengubah nama dan sodium konsumsi tanpa mengubah id dan waktu
+00:00 +33: test/data/consumption_repository_impl_test.dart: mengubah konsumsi yang tidak ada menghasilkan StorageFailure
+00:01 +34: test/data/open_food_facts_remote_data_source_test.dart: mengambil produk dan mengubah natrium dari gram ke mg
+00:01 +35: test/data/open_food_facts_remote_data_source_test.dart: produk tanpa data natrium menghasilkan nilai natrium null
+00:01 +36: test/data/open_food_facts_remote_data_source_test.dart: status 404 atau status 0 berarti produk tidak ditemukan
+00:01 +37: test/data/open_food_facts_remote_data_source_test.dart: repository mengubah error server dan timeout menjadi NetworkFailure
+00:01 +38: test/data/settings_repository_impl_test.dart: default semua fitur mati
+00:01 +39: test/data/settings_repository_impl_test.dart: pengaturan tetap tersimpan setelah aplikasi dibuka kembali
+00:01 +40: test/presentation/providers/add_consumption_notifier_test.dart: state awal adalah loading
+00:01 +41: test/presentation/providers/add_consumption_notifier_test.dart: load menghasilkan success, empty, atau error sesuai hasil repository
+00:01 +42: test/presentation/providers/add_consumption_notifier_test.dart: submit kedua saat submit pertama berjalan diabaikan
+00:01 +43: test/presentation/providers/add_consumption_notifier_test.dart: submit gagal menyimpan pesan error dan mengembalikan isSubmitting ke false
+00:01 +44: test/presentation/providers/add_consumption_notifier_test.dart: delete menghapus konsumsi lalu menghitung ulang ringkasan harian
+00:01 +45: test/presentation/providers/add_consumption_notifier_test.dart: update mengubah konsumsi lalu ringkasan dihitung ulang
+00:01 +46: test/presentation/providers/add_consumption_notifier_test.dart: update gagal di storage menampilkan pesan error
+00:01 +47: test/presentation/providers/add_consumption_notifier_test.dart: notifikasi dikirim saat catatan baru membuat status naik ke Bahaya
+00:01 +48: test/presentation/providers/app_lock_notifier_test.dart: kunci mati: aplikasi langsung terbuka tanpa autentikasi
+00:01 +49: test/presentation/providers/app_lock_notifier_test.dart: kunci aktif: autentikasi berhasil membuka aplikasi
+00:01 +50: test/presentation/providers/app_lock_notifier_test.dart: dibatalkan pengguna: tetap terkunci dengan pesan, lalu bisa dicoba lagi
+00:01 +51: test/presentation/providers/app_lock_notifier_test.dart: terlalu banyak percobaan dan gagal tetap terkunci dengan pesan berbeda
+00:01 +52: test/presentation/providers/app_lock_notifier_test.dart: kunci layar HP dihapus: kunci aplikasi dimatikan agar pengguna tidak terkunci permanen
+00:01 +53: test/presentation/providers/app_lock_notifier_test.dart: terkunci lagi setelah di latar belakang lebih lama dari batas waktu
+00:01 +54: test/presentation/providers/history_notifier_test.dart: load menghasilkan success, empty, atau error sesuai hasil repository
+00:01 +55: test/presentation/providers/product_lookup_notifier_test.dart: state awal idle
+00:01 +56: test/presentation/providers/product_lookup_notifier_test.dart: search menghasilkan success, empty, atau error
+00:01 +57: test/presentation/providers/product_lookup_notifier_test.dart: retry mencari ulang barcode terakhir
+00:01 +58: test/presentation/providers/product_lookup_notifier_test.dart: pencarian kedua saat loading diabaikan
+00:01 +59: test/presentation/providers/product_lookup_notifier_test.dart: submit menyimpan konsumsi hasil scan satu kali walaupun dipanggil dua kali
+00:01 +60: test/presentation/providers/product_lookup_notifier_test.dart: submit gagal menyimpan pesan error
+00:01 +61: test/presentation/providers/settings_notifier_test.dart: mengaktifkan peringatan meminta izin notifikasi lalu menyimpan
+00:01 +62: test/presentation/providers/settings_notifier_test.dart: izin notifikasi ditolak: switch tetap mati dan pesan arahan ditampilkan
+00:01 +63: test/presentation/providers/settings_notifier_test.dart: mematikan peringatan tidak meminta izin
+00:01 +64: test/presentation/providers/settings_notifier_test.dart: mengaktifkan kunci aplikasi butuh autentikasi berhasil
+00:01 +65: test/presentation/providers/settings_notifier_test.dart: autentikasi dibatalkan atau HP tanpa kunci layar: pengaturan tidak berubah
+00:01 +66: test/presentation/providers/settings_notifier_test.dart: gagal menyimpan menampilkan pesan error
+00:01 +67: All tests passed!
+00:10 +180: All tests passed!

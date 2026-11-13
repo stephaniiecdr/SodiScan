@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../domain/entities/food_consumption.dart';
+import '../../../domain/validation/consumption_rules.dart';
 import '../../providers/add_consumption_notifier.dart';
+import '../../widgets/form_feedback.dart';
 import '../../widgets/keyboard_safe.dart';
-import 'consumption_form_validators.dart';
 
 class ConsumptionForm extends StatefulWidget {
   const ConsumptionForm({super.key, this.initial});
@@ -50,20 +50,27 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
       return;
     }
 
+    final saved = await _save(notifier);
+    if (!mounted || !saved) return;
+    await _onSaved();
+  }
+
+  Future<bool> _save(AddConsumptionNotifier notifier) {
     final productName = _productNameController.text;
     final sodiumMg = parseSodiumMg(_sodiumController.text)!.toDouble();
-    final saved = _isEditing
-        ? await notifier.update(widget.initial!, productName: productName, sodiumMg: sodiumMg)
-        : await notifier.submit(productName: productName, sodiumMg: sodiumMg);
-    if (!mounted || !saved) return;
+    return _isEditing
+        ? notifier.update(widget.initial!, productName: productName, sodiumMg: sodiumMg)
+        : notifier.submit(productName: productName, sodiumMg: sodiumMg);
+  }
 
+  Future<void> _onSaved() async {
     _formKey.currentState!.reset();
     _productNameController.clear();
     _sodiumController.clear();
     FocusScope.of(context).unfocus();
-    HapticFeedback.lightImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(_isEditing ? 'Perubahan berhasil disimpan.' : 'Konsumsi berhasil disimpan.')),
+    showSuccessFeedback(
+      ScaffoldMessenger.of(context),
+      _isEditing ? 'Perubahan berhasil disimpan.' : 'Konsumsi berhasil disimpan.',
     );
     await Navigator.of(context).maybePop(true);
   }
@@ -121,29 +128,14 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
           ),
           if (state.submitErrorMessage != null) ...[
             const SizedBox(height: 12),
-            Semantics(
-              liveRegion: true,
-              child: Text(
-                state.submitErrorMessage!,
-                key: const Key('submitErrorText'),
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
+            FormErrorText(state.submitErrorMessage!, key: const Key('submitErrorText')),
           ],
           const SizedBox(height: 16),
-          FilledButton(
-            key: const Key('submitButton'),
-            onPressed: isSubmitting ? null : _submit,
-            child: isSubmitting
-                ? const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-                      SizedBox(width: 12),
-                      Text('Menyimpan...'),
-                    ],
-                  )
-                : Text(_isEditing ? 'Simpan Perubahan' : 'Simpan Konsumsi'),
+          SubmitButton(
+            buttonKey: const Key('submitButton'),
+            label: _isEditing ? 'Simpan Perubahan' : 'Simpan Konsumsi',
+            isSubmitting: isSubmitting,
+            onPressed: _submit,
           ),
         ],
       ),

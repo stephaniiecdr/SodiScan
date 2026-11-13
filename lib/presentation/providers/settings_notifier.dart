@@ -3,8 +3,9 @@ import 'package:flutter/foundation.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/services/device_authenticator.dart';
 import '../../domain/services/notification_service.dart';
+import 'base_notifier.dart';
 
-class SettingsNotifier extends ChangeNotifier {
+class SettingsNotifier extends ChangeNotifier with SafeNotifier {
   SettingsNotifier({
     required SettingsRepository settingsRepository,
     required DeviceAuthenticator authenticator,
@@ -34,7 +35,6 @@ class SettingsNotifier extends ChangeNotifier {
   bool _isLoading = true;
   bool _isBusy = false;
   String? _errorMessage;
-  bool _isDisposed = false;
 
   AppSettings? get settings => _settings;
   bool get isLoading => _isLoading;
@@ -44,14 +44,14 @@ class SettingsNotifier extends ChangeNotifier {
   Future<void> load() async {
     _isLoading = true;
     _errorMessage = null;
-    _notify();
+    notifySafely();
     try {
       _settings = await _settingsRepository.load();
     } on Exception {
       _errorMessage = loadErrorText;
     }
     _isLoading = false;
-    _notify();
+    notifySafely();
   }
 
   Future<String?> setSodiumAlerts(bool enabled) {
@@ -81,7 +81,7 @@ class SettingsNotifier extends ChangeNotifier {
   Future<String?> _change(Future<(AppSettings?, String)> Function() action) async {
     if (_isBusy || _settings == null) return null;
     _isBusy = true;
-    _notify();
+    notifySafely();
     try {
       final (updated, message) = await action();
       if (updated != null) {
@@ -93,17 +93,7 @@ class SettingsNotifier extends ChangeNotifier {
       return saveErrorText;
     } finally {
       _isBusy = false;
-      _notify();
+      notifySafely();
     }
-  }
-
-  void _notify() {
-    if (!_isDisposed) notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _isDisposed = true;
-    super.dispose();
   }
 }

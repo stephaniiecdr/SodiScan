@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sodiscan/presentation/screens/add_consumption/consumption_form_validators.dart';
+import 'package:sodiscan/domain/validation/consumption_rules.dart';
 
 void main() {
   group('validateSodiumMg', () {

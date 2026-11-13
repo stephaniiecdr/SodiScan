@@ -1,6 +1,6 @@
 import '../entities/food_consumption.dart';
 import '../repositories/consumption_repository.dart';
-import 'record_consumption.dart';
+import '../validation/consumption_rules.dart';
 
 class UpdateConsumption {
   const UpdateConsumption(this._repository);

@@ -1,6 +1,3 @@
-import 'package:flutter/foundation.dart';
-
-import '../../core/errors/failures.dart';
 import '../../domain/entities/daily_nutrition.dart';
 import '../../domain/entities/food_consumption.dart';
 import '../../domain/usecases/delete_consumption.dart';
@@ -9,8 +6,9 @@ import '../../domain/usecases/record_consumption.dart';
 import '../../domain/usecases/send_sodium_alert.dart';
 import '../../domain/usecases/update_consumption.dart';
 import 'add_consumption_state.dart';
+import 'base_notifier.dart';
 
-class AddConsumptionNotifier extends ChangeNotifier {
+class AddConsumptionNotifier extends StateNotifier<AddConsumptionState> {
   AddConsumptionNotifier({
     required GetDailySummary getDailySummary,
     required RecordConsumption recordConsumption,
@@ -23,7 +21,8 @@ class AddConsumptionNotifier extends ChangeNotifier {
         _updateConsumption = updateConsumption,
         _deleteConsumption = deleteConsumption,
         _sendSodiumAlert = sendSodiumAlert,
-        _clock = clock ?? DateTime.now;
+        _clock = clock ?? DateTime.now,
+        super(const AddConsumptionState());
 
   static const String loadErrorText = 'Data tidak dapat dimuat.';
   static const String submitErrorText = 'Konsumsi gagal disimpan. Silakan coba lagi.';
@@ -37,13 +36,8 @@ class AddConsumptionNotifier extends ChangeNotifier {
   final SendSodiumAlert? _sendSodiumAlert;
   final DateTime Function() _clock;
 
-  AddConsumptionState _state = const AddConsumptionState();
-  bool _isDisposed = false;
-
-  AddConsumptionState get state => _state;
-
   Future<void> load() async {
-    _emit(_state.copyWith(loadStatus: LoadStatus.loading, clearLoadError: true));
+    emit(state.copyWith(loadStatus: LoadStatus.loading, clearLoadError: true));
     await _fetchSummary();
   }
 
@@ -65,7 +59,7 @@ class AddConsumptionNotifier extends ChangeNotifier {
     );
   }
 
-  void clearSubmitError() => _emit(_state.copyWith(clearSubmitError: true));
+  void clearSubmitError() => emit(state.copyWith(clearSubmitError: true));
 
   Future<bool> delete(String id) async {
     try {
@@ -78,32 +72,25 @@ class AddConsumptionNotifier extends ChangeNotifier {
   }
 
   Future<bool> _write(Future<void> Function() action, {required String errorText}) async {
-    if (_state.isSubmitting) return false;
-    _emit(_state.copyWith(isSubmitting: true, clearSubmitError: true));
+    if (state.isSubmitting) return false;
+    emit(state.copyWith(isSubmitting: true, clearSubmitError: true));
 
-    try {
-      await action();
-    } on ValidationFailure catch (failure) {
-      _emit(_state.copyWith(isSubmitting: false, submitErrorMessage: failure.message));
-      return false;
-    } on Exception {
-      _emit(_state.copyWith(isSubmitting: false, submitErrorMessage: errorText));
-      return false;
-    }
+    final error = await runSubmit(action, fallbackMessage: errorText);
+    emit(state.copyWith(isSubmitting: false, submitErrorMessage: error));
+    if (error != null) return false;
 
-    _emit(_state.copyWith(isSubmitting: false));
     await _fetchSummary();
     return true;
   }
 
   Future<void> _fetchSummary() async {
-    final previous = _state.summary;
+    final previous = state.summary;
     try {
       final summary = await _getDailySummary(_clock());
-      _emit(_state.copyWith(loadStatus: _statusFor(summary), summary: summary, clearLoadError: true));
+      emit(state.copyWith(loadStatus: _statusFor(summary), summary: summary, clearLoadError: true));
       await _alertIfNeeded(previous, summary);
     } on Exception {
-      _emit(_state.copyWith(loadStatus: LoadStatus.error, loadErrorMessage: loadErrorText));
+      emit(state.copyWith(loadStatus: LoadStatus.error, loadErrorMessage: loadErrorText));
     }
   }
 
@@ -117,17 +104,5 @@ class AddConsumptionNotifier extends ChangeNotifier {
 
   LoadStatus _statusFor(DailyNutrition summary) {
     return summary.consumptions.isEmpty ? LoadStatus.empty : LoadStatus.success;
-  }
-
-  void _emit(AddConsumptionState newState) {
-    if (_isDisposed) return;
-    _state = newState;
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _isDisposed = true;
-    super.dispose();
   }
 }

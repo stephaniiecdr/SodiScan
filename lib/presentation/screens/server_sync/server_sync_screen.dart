@@ -9,6 +9,7 @@ import '../../providers/server_sync_notifier.dart';
 import '../../providers/server_sync_state.dart';
 import '../../widgets/adaptive_layout.dart';
 import '../../widgets/consumption_tile.dart';
+import '../../widgets/form_feedback.dart';
 import '../../widgets/state_message.dart';
 
 class ServerSyncScreen extends StatelessWidget {
@@ -107,7 +108,7 @@ class _SyncActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const spinner = SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2));
+    const spinner = ButtonSpinner();
     final isUploading = activeSync == SyncAction.upload;
     final isRestoring = activeSync == SyncAction.restore;
     final upload = FilledButton.icon(

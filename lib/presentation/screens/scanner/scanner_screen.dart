@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 
-import '../product_lookup/product_lookup_validators.dart';
+import '../../../domain/validation/product_rules.dart';
 import 'scan_result.dart';
 
 Future<ScanResult?> scanBarcode(BuildContext context) {

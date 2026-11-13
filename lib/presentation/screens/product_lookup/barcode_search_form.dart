@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../providers/product_lookup_notifier.dart';
 import '../../providers/product_lookup_state.dart';
+import '../../../domain/validation/product_rules.dart';
+import '../../widgets/form_feedback.dart';
 import '../../widgets/keyboard_safe.dart';
 import '../scanner/scanner_screen.dart';
-import 'product_lookup_validators.dart';
 
 class BarcodeSearchForm extends StatefulWidget {
   const BarcodeSearchForm({super.key, this.initialBarcode});
@@ -83,9 +84,7 @@ class _BarcodeSearchFormState extends State<BarcodeSearchForm> {
           FilledButton.tonalIcon(
             key: const Key('searchButton'),
             onPressed: isBusy ? null : _search,
-            icon: isSearching
-                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.search),
+            icon: isSearching ? const ButtonSpinner() : const Icon(Icons.search),
             label: Text(isSearching ? 'Mencari...' : 'Cari Produk'),
           ),
         ],

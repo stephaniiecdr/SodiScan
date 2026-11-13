@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/utils/sodium_format.dart';
 import '../../../domain/entities/product.dart';
+import '../../../domain/validation/product_rules.dart';
 import '../../providers/product_lookup_notifier.dart';
+import '../../widgets/form_feedback.dart';
 import '../../widgets/keyboard_safe.dart';
-import 'product_lookup_validators.dart';
 
 class PortionForm extends StatefulWidget {
   const PortionForm({super.key, required this.product});
@@ -48,8 +48,7 @@ class _PortionFormState extends State<PortionForm> {
     final saved = await notifier.submit(parseAmount(_amountController.text)!);
     if (!mounted || !saved) return;
 
-    HapticFeedback.lightImpact();
-    messenger.showSnackBar(const SnackBar(content: Text('Konsumsi berhasil disimpan.')));
+    showSuccessFeedback(messenger, 'Konsumsi berhasil disimpan.');
     navigator.pop(true);
   }
 
@@ -98,25 +97,14 @@ class _PortionFormState extends State<PortionForm> {
           ),
           if (state.submitErrorMessage != null) ...[
             const SizedBox(height: 12),
-            Semantics(
-              liveRegion: true,
-              child: Text(state.submitErrorMessage!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-            ),
+            FormErrorText(state.submitErrorMessage!),
           ],
           const SizedBox(height: 16),
-          FilledButton(
-            key: const Key('saveProductButton'),
-            onPressed: isSubmitting ? null : _submit,
-            child: isSubmitting
-                ? const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-                      SizedBox(width: 12),
-                      Text('Menyimpan...'),
-                    ],
-                  )
-                : const Text('Simpan Konsumsi'),
+          SubmitButton(
+            buttonKey: const Key('saveProductButton'),
+            label: 'Simpan Konsumsi',
+            isSubmitting: isSubmitting,
+            onPressed: _submit,
           ),
         ],
       ),

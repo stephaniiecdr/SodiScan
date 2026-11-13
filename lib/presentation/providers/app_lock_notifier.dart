@@ -2,10 +2,11 @@ import 'package:flutter/foundation.dart';
 
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/services/device_authenticator.dart';
+import 'base_notifier.dart';
 
 enum AppLockStatus { checking, locked, authenticating, unlocked }
 
-class AppLockNotifier extends ChangeNotifier {
+class AppLockNotifier extends ChangeNotifier with SafeNotifier {
   AppLockNotifier({
     required SettingsRepository settingsRepository,
     required DeviceAuthenticator authenticator,
@@ -30,7 +31,6 @@ class AppLockNotifier extends ChangeNotifier {
   AppLockStatus _status = AppLockStatus.checking;
   String? _message;
   DateTime? _backgroundedAt;
-  bool _isDisposed = false;
 
   AppLockStatus get status => _status;
   String? get message => _message;
@@ -86,7 +86,7 @@ class AppLockNotifier extends ChangeNotifier {
   void clearMessage() {
     if (_message == null) return;
     _message = null;
-    if (!_isDisposed) notifyListeners();
+    notifySafely();
   }
 
   Future<AppSettings> _loadSettings() async {
@@ -98,15 +98,9 @@ class AppLockNotifier extends ChangeNotifier {
   }
 
   void _set(AppLockStatus status, {String? message}) {
-    if (_isDisposed) return;
+    if (isDisposed) return;
     _status = status;
     _message = message;
     notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _isDisposed = true;
-    super.dispose();
   }
 }

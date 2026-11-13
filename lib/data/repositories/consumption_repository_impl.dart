@@ -3,6 +3,7 @@ import '../../domain/entities/food_consumption.dart';
 import '../../domain/repositories/consumption_repository.dart';
 import '../datasources/local/consumption_local_data_source.dart';
 import '../models/food_consumption_model.dart';
+import 'repository_guard.dart';
 
 class ConsumptionRepositoryImpl implements ConsumptionRepository {
   const ConsumptionRepositoryImpl(this._localDataSource);
@@ -10,34 +11,20 @@ class ConsumptionRepositoryImpl implements ConsumptionRepository {
   final ConsumptionLocalDataSource _localDataSource;
 
   @override
-  Future<List<FoodConsumption>> getConsumptionsByDate(DateTime date) async {
-    try {
-      return _localDataSource
-          .getAll()
-          .where((model) => _isSameDay(model.consumedAt, date))
-          .map((model) => model.toEntity())
-          .toList();
-    } catch (error) {
-      throw StorageFailure('Gagal membaca data konsumsi: $error');
-    }
+  Future<List<FoodConsumption>> getConsumptionsByDate(DateTime date) {
+    return guardStorage('membaca data konsumsi', () async {
+      return _readAll().where((consumption) => _isSameDay(consumption.consumedAt, date)).toList();
+    });
   }
 
   @override
-  Future<List<FoodConsumption>> getAllConsumptions() async {
-    try {
-      return _localDataSource.getAll().map((model) => model.toEntity()).toList();
-    } catch (error) {
-      throw StorageFailure('Gagal membaca riwayat konsumsi: $error');
-    }
+  Future<List<FoodConsumption>> getAllConsumptions() {
+    return guardStorage('membaca riwayat konsumsi', () async => _readAll().toList());
   }
 
   @override
-  Future<void> saveConsumption(FoodConsumption consumption) async {
-    try {
-      await _localDataSource.save(FoodConsumptionModel.fromEntity(consumption));
-    } catch (error) {
-      throw StorageFailure('Gagal menyimpan data konsumsi: $error');
-    }
+  Future<void> saveConsumption(FoodConsumption consumption) {
+    return guardStorage('menyimpan data konsumsi', () => _write(consumption));
   }
 
   @override
@@ -45,21 +32,17 @@ class ConsumptionRepositoryImpl implements ConsumptionRepository {
     if (!_localDataSource.contains(consumption.id)) {
       throw const StorageFailure('Data konsumsi yang akan diubah tidak ditemukan.');
     }
-    try {
-      await _localDataSource.save(FoodConsumptionModel.fromEntity(consumption));
-    } catch (error) {
-      throw StorageFailure('Gagal mengubah data konsumsi: $error');
-    }
+    await guardStorage('mengubah data konsumsi', () => _write(consumption));
   }
 
   @override
-  Future<void> deleteConsumption(String id) async {
-    try {
-      await _localDataSource.delete(id);
-    } catch (error) {
-      throw StorageFailure('Gagal menghapus data konsumsi: $error');
-    }
+  Future<void> deleteConsumption(String id) {
+    return guardStorage('menghapus data konsumsi', () => _localDataSource.delete(id));
   }
+
+  Iterable<FoodConsumption> _readAll() => _localDataSource.getAll().map((model) => model.toEntity());
+
+  Future<void> _write(FoodConsumption consumption) => _localDataSource.save(FoodConsumptionModel.fromEntity(consumption));
 
   bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
 }

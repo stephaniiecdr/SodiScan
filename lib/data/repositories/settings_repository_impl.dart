@@ -1,7 +1,7 @@
 import 'package:hive/hive.dart';
 
-import '../../core/errors/failures.dart';
 import '../../domain/repositories/settings_repository.dart';
+import 'repository_guard.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   const SettingsRepositoryImpl(this._box);
@@ -21,11 +21,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<void> save(AppSettings settings) async {
-    try {
-      await _box.putAll({_appLockKey: settings.appLockEnabled, _sodiumAlertsKey: settings.sodiumAlertsEnabled});
-    } catch (error) {
-      throw StorageFailure('Gagal menyimpan pengaturan: $error');
-    }
+  Future<void> save(AppSettings settings) {
+    return guardStorage(
+      'menyimpan pengaturan',
+      () => _box.putAll({_appLockKey: settings.appLockEnabled, _sodiumAlertsKey: settings.sodiumAlertsEnabled}),
+    );
   }
 }
