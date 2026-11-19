@@ -6,6 +6,7 @@ import '../../../domain/services/device_authenticator.dart';
 import '../../../domain/services/notification_service.dart';
 import '../../providers/settings_notifier.dart';
 import '../../widgets/adaptive_layout.dart';
+import '../logs/log_screen.dart';
 import '../../widgets/state_message.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -19,6 +20,7 @@ class SettingsScreen extends StatelessWidget {
     );
 
     return MaterialPageRoute<void>(
+      settings: const RouteSettings(name: '/settings'),
       builder: (_) => ChangeNotifierProvider(create: (_) => notifier..load(), child: const SettingsScreen()),
     );
   }
@@ -76,6 +78,15 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       value: settings.appLockEnabled,
                       onChanged: notifier.isBusy ? null : (value) => _run(context, () => notifier.setAppLock(value)),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      key: const Key('openLogsTile'),
+                      leading: const Icon(Icons.receipt_long_outlined),
+                      title: const Text('Log Aplikasi'),
+                      subtitle: const Text('Lihat dan salin catatan aktivitas serta error untuk membantu melacak masalah.'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.of(context).push(LogScreen.route(context)),
                     ),
                   ],
                 ),

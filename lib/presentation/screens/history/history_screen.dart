@@ -19,6 +19,7 @@ class HistoryScreen extends StatelessWidget {
     final getConsumptionHistory = context.read<GetConsumptionHistory>();
 
     return MaterialPageRoute<void>(
+      settings: const RouteSettings(name: '/history'),
       builder: (_) => ChangeNotifierProvider(
         create: (_) => HistoryNotifier(getConsumptionHistory: getConsumptionHistory)..load(),
         child: const HistoryScreen(),

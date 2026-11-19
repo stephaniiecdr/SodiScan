@@ -1,4 +1,5 @@
 import '../../core/errors/failures.dart';
+import '../../core/logging/app_log.dart';
 import '../../domain/usecases/sync_consumptions.dart';
 import 'add_consumption_state.dart';
 import 'base_notifier.dart';
@@ -14,6 +15,7 @@ class ServerSyncNotifier extends StateNotifier<ServerSyncState> {
         _restoreConsumptions = restoreConsumptions,
         super(const ServerSyncState());
 
+  static const String _tag = 'Sinkronisasi';
   static const String networkErrorText = 'Tidak dapat terhubung ke server. Pastikan server berjalan lalu coba lagi.';
   static const String formatErrorText = 'Data dari server tidak valid.';
 
@@ -27,6 +29,7 @@ class ServerSyncNotifier extends StateNotifier<ServerSyncState> {
       final items = await _getServerConsumptions();
       emit(state.copyWith(status: items.isEmpty ? LoadStatus.empty : LoadStatus.success, items: items));
     } on Exception catch (error) {
+      AppLog.w(_tag, 'Data server gagal dimuat', error);
       emit(state.copyWith(status: LoadStatus.error, items: const [], errorMessage: messageFor(error)));
     }
   }
@@ -47,9 +50,13 @@ class ServerSyncNotifier extends StateNotifier<ServerSyncState> {
   Future<String> _sync(SyncAction syncAction, Future<String> Function() action) async {
     if (state.isSyncing) return '';
     emit(state.copyWith(activeSync: syncAction));
+    AppLog.i(_tag, 'Mulai ${syncAction.name}');
     try {
-      return await action();
+      final message = await action();
+      AppLog.i(_tag, '${syncAction.name} selesai: $message');
+      return message;
     } on Exception catch (error) {
+      AppLog.w(_tag, '${syncAction.name} gagal', error);
       return messageFor(error);
     } finally {
       emit(state.copyWith(clearActiveSync: true));

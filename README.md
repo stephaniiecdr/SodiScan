@@ -72,3 +72,5 @@ Bagian ini menjelaskan fitur atau scope yang secara sengaja tidak dikerjakan dal
 - Aplikasi dapat dikunci dengan sidik jari, wajah, atau PIN HP, termasuk penanganan saat autentikasi dibatalkan.
 - Penolakan izin kamera atau notifikasi ditangani dengan pesan yang jelas dan alternatif yang tetap bisa dipakai.
 - Aplikasi dapat digunakan sepenuhnya tanpa akun dan tanpa server, dengan seluruh data utama pengguna tersimpan secara lokal di perangkat.
+- Aktivitas dan error aplikasi tercatat di log (konsol dan **Pengaturan → Log Aplikasi**) sehingga masalah di mode release dapat ditelusuri.
+- APK release dapat dibuat dengan `flutter build apk --release` dan dipasang di HP Android. Langkah lengkap ada di [docs/Pertemuan-10-Release-Candidate.md](docs/Pertemuan-10-Release-Candidate.md).

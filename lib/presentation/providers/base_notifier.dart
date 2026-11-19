@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../core/errors/failures.dart';
+import '../../core/logging/app_log.dart';
 
 /// Mencegah `notifyListeners` dipanggil setelah notifier di-dispose
 /// (misalnya ketika proses async selesai setelah layar ditutup).
@@ -40,13 +41,20 @@ abstract class StateNotifier<T> extends ChangeNotifier with SafeNotifier {
 
 /// Menjalankan aksi simpan dan mengubah exception menjadi pesan untuk UI.
 /// Mengembalikan `null` jika berhasil.
-Future<String?> runSubmit(Future<void> Function() action, {required String fallbackMessage}) async {
+Future<String?> runSubmit(
+  Future<void> Function() action, {
+  required String fallbackMessage,
+  String tag = 'Submit',
+}) async {
   try {
     await action();
+    AppLog.i(tag, 'Simpan berhasil');
     return null;
   } on ValidationFailure catch (failure) {
+    AppLog.d(tag, 'Validasi gagal: ${failure.message}');
     return failure.message;
-  } on Exception {
+  } on Exception catch (error) {
+    AppLog.w(tag, 'Simpan gagal', error);
     return fallbackMessage;
   }
 }

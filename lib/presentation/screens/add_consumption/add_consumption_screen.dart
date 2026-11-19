@@ -10,7 +10,10 @@ class AddConsumptionScreen extends StatelessWidget {
   final FoodConsumption? consumption;
 
   static Route<bool> route({FoodConsumption? consumption}) {
-    return MaterialPageRoute<bool>(builder: (_) => AddConsumptionScreen(consumption: consumption));
+    return MaterialPageRoute<bool>(
+      settings: RouteSettings(name: consumption == null ? '/consumption/add' : '/consumption/edit'),
+      builder: (_) => AddConsumptionScreen(consumption: consumption),
+    );
   }
 
   @override

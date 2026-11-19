@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'core/logging/log_observers.dart';
+import 'core/logging/log_store.dart';
 import 'core/theme/app_theme.dart';
 import 'domain/repositories/consumption_repository.dart';
 import 'domain/repositories/consumption_sync_repository.dart';
@@ -30,6 +32,7 @@ class SodiScanApp extends StatelessWidget {
     required this.settingsRepository,
     required this.authenticator,
     required this.notificationService,
+    required this.logStore,
   });
 
   final ConsumptionRepository consumptionRepository;
@@ -38,6 +41,7 @@ class SodiScanApp extends StatelessWidget {
   final SettingsRepository settingsRepository;
   final DeviceAuthenticator authenticator;
   final NotificationService notificationService;
+  final LogStore logStore;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +55,7 @@ class SodiScanApp extends StatelessWidget {
         Provider.value(value: settingsRepository),
         Provider.value(value: authenticator),
         Provider.value(value: notificationService),
+        Provider.value(value: logStore),
         Provider.value(value: GetServerConsumptions(consumptionSyncRepository)),
         Provider.value(value: UploadConsumptions(consumptionRepository, consumptionSyncRepository)),
         Provider.value(value: RestoreConsumptions(consumptionSyncRepository, consumptionRepository)),
@@ -71,6 +76,7 @@ class SodiScanApp extends StatelessWidget {
         title: 'SodiScan',
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
+        navigatorObservers: [LogNavigatorObserver()],
         builder: (_, child) => AppLockGate(child: child!),
         home: const HomeScreen(),
       ),

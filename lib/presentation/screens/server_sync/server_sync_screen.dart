@@ -23,6 +23,7 @@ class ServerSyncScreen extends StatelessWidget {
     );
 
     return MaterialPageRoute<void>(
+      settings: const RouteSettings(name: '/server-sync'),
       builder: (_) => ChangeNotifierProvider(create: (_) => notifier..load(), child: const ServerSyncScreen()),
     );
   }

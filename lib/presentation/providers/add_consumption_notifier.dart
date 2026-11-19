@@ -1,3 +1,4 @@
+import '../../core/logging/app_log.dart';
 import '../../domain/entities/daily_nutrition.dart';
 import '../../domain/entities/food_consumption.dart';
 import '../../domain/usecases/delete_consumption.dart';
@@ -24,6 +25,7 @@ class AddConsumptionNotifier extends StateNotifier<AddConsumptionState> {
         _clock = clock ?? DateTime.now,
         super(const AddConsumptionState());
 
+  static const String _tag = 'Konsumsi';
   static const String loadErrorText = 'Data tidak dapat dimuat.';
   static const String submitErrorText = 'Konsumsi gagal disimpan. Silakan coba lagi.';
   static const String updateErrorText = 'Perubahan gagal disimpan. Silakan coba lagi.';
@@ -64,7 +66,9 @@ class AddConsumptionNotifier extends StateNotifier<AddConsumptionState> {
   Future<bool> delete(String id) async {
     try {
       await _deleteConsumption(id);
-    } on Exception {
+      AppLog.i(_tag, 'Hapus konsumsi $id berhasil');
+    } on Exception catch (error) {
+      AppLog.w(_tag, 'Hapus konsumsi $id gagal', error);
       return false;
     }
     await _fetchSummary();
@@ -75,7 +79,7 @@ class AddConsumptionNotifier extends StateNotifier<AddConsumptionState> {
     if (state.isSubmitting) return false;
     emit(state.copyWith(isSubmitting: true, clearSubmitError: true));
 
-    final error = await runSubmit(action, fallbackMessage: errorText);
+    final error = await runSubmit(action, fallbackMessage: errorText, tag: _tag);
     emit(state.copyWith(isSubmitting: false, submitErrorMessage: error));
     if (error != null) return false;
 
@@ -89,15 +93,18 @@ class AddConsumptionNotifier extends StateNotifier<AddConsumptionState> {
       final summary = await _getDailySummary(_clock());
       emit(state.copyWith(loadStatus: _statusFor(summary), summary: summary, clearLoadError: true));
       await _alertIfNeeded(previous, summary);
-    } on Exception {
+    } on Exception catch (error) {
+      AppLog.w(_tag, 'Ringkasan harian gagal dimuat', error);
       emit(state.copyWith(loadStatus: LoadStatus.error, loadErrorMessage: loadErrorText));
     }
   }
 
   Future<void> _alertIfNeeded(DailyNutrition? previous, DailyNutrition current) async {
     try {
-      await _sendSodiumAlert?.call(previous: previous, current: current);
-    } catch (_) {
+      final sent = await _sendSodiumAlert?.call(previous: previous, current: current) ?? false;
+      if (sent) AppLog.i(_tag, 'Notifikasi natrium dikirim (${current.riskStatus.name})');
+    } catch (error, stack) {
+      AppLog.w(_tag, 'Notifikasi natrium gagal dikirim', error, stack);
       // Notifikasi bersifat tambahan; kegagalannya tidak boleh mengganggu pencatatan.
     }
   }

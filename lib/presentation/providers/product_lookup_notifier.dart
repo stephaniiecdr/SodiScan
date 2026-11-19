@@ -1,4 +1,5 @@
 import '../../core/errors/failures.dart';
+import '../../core/logging/app_log.dart';
 import '../../domain/entities/food_consumption.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/usecases/get_product_by_barcode.dart';
@@ -14,6 +15,7 @@ class ProductLookupNotifier extends StateNotifier<ProductLookupState> {
         _recordConsumption = recordConsumption,
         super(const ProductLookupState());
 
+  static const String _tag = 'Produk';
   static const String notFoundText = 'Produk dengan barcode ini belum ada di Open Food Facts.';
   static const String noSodiumText = 'Produk ditemukan, tetapi data natriumnya tidak tersedia.';
   static const String networkErrorText = 'Data produk tidak dapat dimuat. Periksa koneksi internet Anda.';
@@ -27,11 +29,15 @@ class ProductLookupNotifier extends StateNotifier<ProductLookupState> {
     final code = barcode.trim();
     emit(ProductLookupState(status: LookupStatus.loading, barcode: code));
 
+    AppLog.i(_tag, 'Cari barcode $code');
     try {
       emit(_resultFor(await _getProductByBarcode(code)));
+      AppLog.i(_tag, 'Hasil barcode $code: ${state.status.name}');
     } on ValidationFailure catch (failure) {
+      AppLog.d(_tag, 'Barcode tidak valid: ${failure.message}');
       emit(state.copyWith(status: LookupStatus.error, message: failure.message));
-    } on Exception {
+    } on Exception catch (error) {
+      AppLog.w(_tag, 'Pencarian barcode $code gagal', error);
       emit(state.copyWith(status: LookupStatus.error, message: networkErrorText));
     }
   }
@@ -55,6 +61,7 @@ class ProductLookupNotifier extends StateNotifier<ProductLookupState> {
         barcode: product.barcode,
       ),
       fallbackMessage: submitErrorText,
+      tag: _tag,
     );
     emit(state.copyWith(isSubmitting: false, submitErrorMessage: error));
     return error == null;

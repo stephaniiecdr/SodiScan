@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/logging/app_log.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/services/device_authenticator.dart';
 import 'base_notifier.dart';
@@ -51,6 +52,7 @@ class AppLockNotifier extends ChangeNotifier with SafeNotifier {
     _set(AppLockStatus.authenticating);
 
     final result = await _authenticator.authenticate(unlockReason);
+    AppLog.i('KunciAplikasi', 'Hasil autentikasi: ${result.name}');
     switch (result) {
       case DeviceAuthResult.success:
         _set(AppLockStatus.unlocked);
@@ -92,7 +94,8 @@ class AppLockNotifier extends ChangeNotifier with SafeNotifier {
   Future<AppSettings> _loadSettings() async {
     try {
       return await _settingsRepository.load();
-    } on Exception {
+    } on Exception catch (error) {
+      AppLog.w('KunciAplikasi', 'Pengaturan gagal dibaca, memakai nilai bawaan', error);
       return const AppSettings();
     }
   }

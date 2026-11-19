@@ -1,0 +1,480 @@
+﻿00:00 +0: loading test/core/date_format_test.dart
+00:00 +0: test/core/date_format_test.dart: memformat tanggal dalam Bahasa Indonesia
+00:00 +1: test/core/logging/app_log_test.dart: AppLog mencatat ke store dan mencetak ke konsol
+00:00 +2: test/core/logging/app_log_test.dart: AppLog log di bawah minLevel diabaikan (mode release)
+00:00 +3: test/core/logging/app_log_test.dart: AppLog error dan stack trace ikut tersimpan
+00:00 +4: test/core/logging/app_log_test.dart: AppLog store yang error tidak membuat aplikasi crash
+00:00 +5: test/core/logging/app_log_test.dart: InMemoryLogStore membuang log tertua jika melebihi batas
+00:00 +6: test/core/logging/app_log_test.dart: LogEntry toMap lalu tryFromMap menghasilkan data yang sama
+00:00 +7: test/core/logging/app_log_test.dart: LogEntry data rusak menghasilkan null
+00:00 +8: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 1. Model valid: JSON lengkap diubah menjadi model dan entity
+00:00 +9: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 2. Model invalid: field wajib hilang atau salah tipe ditolak dengan FormatException
+00:00 +10: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 3. API sukses: GET memuat daftar dan PUT mengirim JSON ke endpoint yang benar
+00:00 +11: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 4. Data kosong: server mengembalikan daftar kosong
+00:00 +12: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 5. HTTP gagal: status 500, offline, dan timeout menjadi NetworkFailure
+[SodiScan] 2026-11-20T00:21:18.812486 [WARN] Repository: Gagal memuat data dari server (jaringan) | ApiException(500): Server merespons 500
+[SodiScan] 2026-11-20T00:21:18.817494 [WARN] Repository: Gagal memuat data dari server (jaringan) | ClientException: offline, uri=http://localhost:8080/api/consumptions
+[SodiScan] 2026-11-20T00:21:18.840433 [WARN] Repository: Gagal memuat data dari server (jaringan) | TimeoutException after 0:00:00.020000: Future not completed
+[SodiScan] 2026-11-20T00:21:18.844159 [WARN] Repository: Gagal menyimpan data ke server (jaringan) | ApiException(500): Server merespons 500
+00:00 +13: test/data/consumption_api_test.dart: Unit test wajib Pertemuan 6 6. JSON rusak: body bukan JSON, tanpa "data", atau item tidak valid menjadi DataFormatFailure
+[SodiScan] 2026-11-20T00:21:18.851250 [ERROR] Repository: Data rusak saat memuat data dari server | FormatException: Unexpected end of input (at character 11)
+{"data": [
+          ^
+
+#0      _ChunkedJsonParser.fail (dart:convert-patch/convert_patch.dart:1466:5)
+#1      _ChunkedJsonParser.close (dart:convert-patch/convert_patch.dart:496:7)
+#2      _parseJson (dart:convert-patch/convert_patch.dart:36:10)
+#3      JsonDecoder.convert (dart:convert/json.dart:640:36)
+#4      JsonCodec.decode (dart:convert/json.dart:219:41)
+#5      jsonDecode (dart:convert/json.dart:160:12)
+#6      ConsumptionRemoteDataSource.fetchAll (package:sodiscan/data/datasources/remote/consumption_remote_data_source.dart:30:18)
+<asynchronous suspension>
+#7      ConsumptionSyncRepositoryImpl.fetchFromServer.<anonymous closure> (package:sodiscan/data/repositories/consumption_sync_repository_impl.dart:15:22)
+<asynchronous suspension>
+#8      guardRemote (package:sodiscan/data/repositories/repository_guard.dart:22:12)
+<asynchronous suspension>
+#9      Throws._matchFuture (package:matcher/src/expect/throws_matcher.dart:103:19)
+<asynchronous suspension>
+#10     _expect.<anonymous closure> (package:matcher/src/expect/expect.dart:153:17)
+<asynchronous suspension>
+#11     StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+#12     expectLater.<anonymous closure> (package:flutter_test/src/widget_tester.dart:508:19)
+<asynchronous suspension>
+#13     main.<anonymous closure>.<anonymous closure> (test/data/consumption_api_test.dart:126:9)
+<asynchronous suspension>
+#14     Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+<asynchronous suspension>
+#15     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#16     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+[SodiScan] 2026-11-20T00:21:18.856915 [ERROR] Repository: Data rusak saat memuat data dari server | FormatException: Unexpected character (at character 1)
+<html>Bad Gateway</html>
+^
+
+#0      _ChunkedJsonParser.fail (dart:convert-patch/convert_patch.dart:1466:5)
+#1      _ChunkedJsonParser.parseNumber (dart:convert-patch/convert_patch.dart:1332:9)
+#2      _ChunkedJsonParser.parse (dart:convert-patch/convert_patch.dart:934:22)
+#3      _parseJson (dart:convert-patch/convert_patch.dart:35:10)
+#4      JsonDecoder.convert (dart:convert/json.dart:640:36)
+#5      JsonCodec.decode (dart:convert/json.dart:219:41)
+#6      jsonDecode (dart:convert/json.dart:160:12)
+#7      ConsumptionRemoteDataSource.fetchAll (package:sodiscan/data/datasources/remote/consumption_remote_data_source.dart:30:18)
+<asynchronous suspension>
+#8      ConsumptionSyncRepositoryImpl.fetchFromServer.<anonymous closure> (package:sodiscan/data/repositories/consumption_sync_repository_impl.dart:15:22)
+<asynchronous suspension>
+#9      guardRemote (package:sodiscan/data/repositories/repository_guard.dart:22:12)
+<asynchronous suspension>
+#10     Throws._matchFuture (package:matcher/src/expect/throws_matcher.dart:103:19)
+<asynchronous suspension>
+#11     _expect.<anonymous closure> (package:matcher/src/expect/expect.dart:153:17)
+<asynchronous suspension>
+#12     StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+#13     expectLater.<anonymous closure> (package:flutter_test/src/widget_tester.dart:508:19)
+<asynchronous suspension>
+#14     main.<anonymous closure>.<anonymous closure> (test/data/consumption_api_test.dart:126:9)
+<asynchronous suspension>
+#15     Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+<asynchronous suspension>
+#16     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#17     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+[SodiScan] 2026-11-20T00:21:18.859233 [ERROR] Repository: Data rusak saat memuat data dari server | FormatException: Respons server tidak memiliki daftar "data".
+#0      ConsumptionRemoteDataSource.fetchAll (package:sodiscan/data/datasources/remote/consumption_remote_data_source.dart:32:7)
+<asynchronous suspension>
+#1      ConsumptionSyncRepositoryImpl.fetchFromServer.<anonymous closure> (package:sodiscan/data/repositories/consumption_sync_repository_impl.dart:15:22)
+<asynchronous suspension>
+#2      guardRemote (package:sodiscan/data/repositories/repository_guard.dart:22:12)
+<asynchronous suspension>
+#3      Throws._matchFuture (package:matcher/src/expect/throws_matcher.dart:103:19)
+<asynchronous suspension>
+#4      _expect.<anonymous closure> (package:matcher/src/expect/expect.dart:153:17)
+<asynchronous suspension>
+#5      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+#6      expectLater.<anonymous closure> (package:flutter_test/src/widget_tester.dart:508:19)
+<asynchronous suspension>
+#7      main.<anonymous closure>.<anonymous closure> (test/data/consumption_api_test.dart:126:9)
+<asynchronous suspension>
+#8      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+<asynchronous suspension>
+#9      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#10     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+[SodiScan] 2026-11-20T00:21:18.860512 [ERROR] Repository: Data rusak saat memuat data dari server | FormatException: Field sodiumMg harus angka lebih dari 0.
+#0      new FoodConsumptionModel.fromJson (package:sodiscan/data/models/food_consumption_model.dart:51:7)
+#1      MappedListIterable.elementAt (dart:_internal/iterable.dart:443:31)
+#2      ListIterator.moveNext (dart:_internal/iterable.dart:372:26)
+#3      new _GrowableList._ofEfficientLengthIterable (dart:core-patch/growable_array.dart:194:27)
+#4      new _GrowableList.of (dart:core-patch/growable_array.dart:154:28)
+#5      new List.of (dart:core-patch/array_patch.dart:39:18)
+#6      ListIterable.toList (dart:_internal/iterable.dart:224:7)
+#7      ConsumptionRemoteDataSource.fetchAll (package:sodiscan/data/datasources/remote/consumption_remote_data_source.dart:34:70)
+<asynchronous suspension>
+#8      ConsumptionSyncRepositoryImpl.fetchFromServer.<anonymous closure> (package:sodiscan/data/repositories/consumption_sync_repository_impl.dart:15:22)
+<asynchronous suspension>
+#9      guardRemote (package:sodiscan/data/repositories/repository_guard.dart:22:12)
+<asynchronous suspension>
+#10     Throws._matchFuture (package:matcher/src/expect/throws_matcher.dart:103:19)
+<asynchronous suspension>
+#11     _expect.<anonymous closure> (package:matcher/src/expect/expect.dart:153:17)
+<asynchronous suspension>
+#12     StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+#13     expectLater.<anonymous closure> (package:flutter_test/src/widget_tester.dart:508:19)
+<asynchronous suspension>
+#14     main.<anonymous closure>.<anonymous closure> (test/data/consumption_api_test.dart:126:9)
+<asynchronous suspension>
+#15     Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+<asynchronous suspension>
+#16     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#17     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+00:00 +14: test/data/consumption_persistence_test.dart: Create: data tetap ada setelah aplikasi ditutup dan dibuka kembali
+00:00 +15: test/data/consumption_persistence_test.dart: Update: perubahan tetap tersimpan setelah aplikasi dibuka kembali
+00:00 +16: test/data/consumption_persistence_test.dart: Delete: data yang dihapus tidak muncul lagi setelah aplikasi dibuka kembali
+00:00 +17: test/data/consumption_repository_impl_test.dart: menyimpan konsumsi ke Hive dan membacanya kembali per tanggal
+00:00 +18: test/data/hive_log_store_test.dart: log tetap ada setelah aplikasi ditutup dan dibuka kembali
+00:00 +19: test/data/hive_log_store_test.dart: log tetap ada setelah aplikasi ditutup dan dibuka kembali
+00:00 +20: test/data/hive_log_store_test.dart: log tetap ada setelah aplikasi ditutup dan dibuka kembali
+00:00 +21: test/data/hive_log_store_test.dart: log tetap ada setelah aplikasi ditutup dan dibuka kembali
+00:00 +22: test/data/hive_log_store_test.dart: log tetap ada setelah aplikasi ditutup dan dibuka kembali
+00:00 +23: test/data/hive_log_store_test.dart: hanya menyimpan log terbaru sesuai batas
+00:00 +24: test/data/hive_log_store_test.dart: baris rusak dilewati, log lain tetap terbaca
+00:00 +25: test/data/hive_log_store_test.dart: clear menghapus semua log
+00:01 +26: test/data/logging_http_client_test.dart: request sukses dicatat sebagai INFO dengan status
+00:01 +27: test/data/logging_http_client_test.dart: status error dicatat sebagai WARN
+00:01 +28: test/data/logging_http_client_test.dart: error koneksi dicatat lalu diteruskan ke pemanggil
+00:01 +29: test/data/logging_http_client_test.dart: isi body tidak ikut dicatat
+00:01 +30: test/data/open_food_facts_remote_data_source_test.dart: mengambil produk dan mengubah natrium dari gram ke mg
+00:01 +31: test/data/open_food_facts_remote_data_source_test.dart: produk tanpa data natrium menghasilkan nilai natrium null
+00:01 +32: test/data/open_food_facts_remote_data_source_test.dart: status 404 atau status 0 berarti produk tidak ditemukan
+00:01 +33: test/data/open_food_facts_remote_data_source_test.dart: repository mengubah error server dan timeout menjadi NetworkFailure
+[SodiScan] 2026-11-20T00:21:19.529421 [WARN] Repository: Gagal mengambil data produk (jaringan) | ClientException: Open Food Facts merespons 500, uri=https://world.openfoodfacts.org/api/v2/product/089686010947.json?fields=code%2Cproduct_name%2Cbrands%2Cserving_size%2Cnutriments
+[SodiScan] 2026-11-20T00:21:19.558657 [WARN] Repository: Gagal mengambil data produk (jaringan) | TimeoutException after 0:00:00.020000: Future not completed
+[SodiScan] 2026-11-20T00:21:19.562138 [WARN] Repository: Gagal mengambil data produk (jaringan) | ClientException: offline, uri=https://world.openfoodfacts.org/api/v2/product/089686010947.json?fields=code%2Cproduct_name%2Cbrands%2Cserving_size%2Cnutriments
+00:01 +34: test/data/repository_guard_test.dart: guardStorage meneruskan hasil jika berhasil
+00:01 +35: test/data/repository_guard_test.dart: guardStorage mengubah error apa pun menjadi StorageFailure
+[SodiScan] 2026-11-20T00:21:19.676969 [ERROR] Repository: Gagal membaca (penyimpanan lokal) | Bad state: box tertutup
+#0      main.<anonymous closure>.<anonymous closure>.<anonymous closure> (test/data/repository_guard_test.dart:17:61)
+#1      guardStorage (package:sodiscan/data/repositories/repository_guard.dart:9:21)
+#2      main.<anonymous closure>.<anonymous closure> (test/data/repository_guard_test.dart:17:25)
+#3      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#4      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#5      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+00:01 +36: test/data/repository_guard_test.dart: guardStorage Failure yang sudah spesifik tidak dibungkus ulang
+00:01 +37: test/data/repository_guard_test.dart: guardRemote JSON rusak menjadi DataFormatFailure
+[SodiScan] 2026-11-20T00:21:19.698332 [ERROR] Repository: Data rusak saat memuat | FormatException: bad
+#0      main.<anonymous closure>.<anonymous closure>.<anonymous closure> (test/data/repository_guard_test.dart:30:59)
+#1      guardRemote (package:sodiscan/data/repositories/repository_guard.dart:22:21)
+#2      main.<anonymous closure>.<anonymous closure> (test/data/repository_guard_test.dart:30:25)
+#3      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#4      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#5      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+00:01 +38: test/data/settings_repository_impl_test.dart: default semua fitur mati
+00:01 +38: test/data/repository_guard_test.dart: guardRemote timeout dan error lain menjadi NetworkFailure
+[SodiScan] 2026-11-20T00:21:19.708969 [WARN] Repository: Gagal memuat (jaringan) | TimeoutException: lama
+[SodiScan] 2026-11-20T00:21:19.709981 [WARN] Repository: Gagal memuat (jaringan) | Exception: offline
+00:01 +39: test/data/settings_repository_impl_test.dart: default semua fitur mati
+00:01 +40: test/data/settings_repository_impl_test.dart: default semua fitur mati
+00:01 +41: test/data/settings_repository_impl_test.dart: default semua fitur mati
+00:01 +42: test/data/settings_repository_impl_test.dart: default semua fitur mati
+00:01 +43: test/data/settings_repository_impl_test.dart: pengaturan tetap tersimpan setelah aplikasi dibuka kembali
+00:01 +44: test/domain/get_consumption_history_test.dart: mengelompokkan konsumsi per tanggal dengan tanggal terbaru di atas
+00:01 +45: test/domain/get_consumption_history_test.dart: konsumsi di dalam satu tanggal diurutkan dari yang terbaru
+00:01 +46: test/domain/get_consumption_history_test.dart: menghasilkan list kosong jika belum ada konsumsi
+00:01 +47: test/domain/mvp_business_logic_test.dart: BR2 - Product.sodiumFor menolak jumlah nol, negatif, dan tidak berhingga
+00:01 +48: test/domain/mvp_business_logic_test.dart: BR2 - Product.sodiumFor produk tanpa data natrium menghasilkan 0 untuk jumlah valid
+00:01 +49: test/domain/mvp_business_logic_test.dart: BR3 - RecordConsumption batas maksimal per catatan menerima natrium tepat 10000 mg
+00:01 +50: test/domain/mvp_business_logic_test.dart: BR3 - RecordConsumption batas maksimal per catatan menolak natrium di atas 10000 mg tanpa menyimpan
+00:01 +51: test/domain/mvp_business_logic_test.dart: BR3 - RecordConsumption batas maksimal per catatan menyimpan barcode dan sumber scan
+00:01 +52: test/domain/mvp_business_logic_test.dart: BR4 - RiskStatus batas tepat 1500 Aman, 1500.1 Mendekati Batas, 2000 Mendekati Batas, 2000.1 Bahaya
+00:01 +53: test/domain/mvp_business_logic_test.dart: BR5 - DailyNutrition sisa, kelebihan, dan progres hari kosong: sisa 2000 mg, progres 0, tidak melebihi batas
+00:01 +54: test/domain/mvp_business_logic_test.dart: BR5 - DailyNutrition sisa, kelebihan, dan progres di bawah batas: sisa dan progres dihitung dari total
+00:01 +55: test/domain/mvp_business_logic_test.dart: BR5 - DailyNutrition sisa, kelebihan, dan progres tepat di batas: sisa 0, belum melebihi batas, progres 1
+00:01 +56: test/domain/mvp_business_logic_test.dart: BR5 - DailyNutrition sisa, kelebihan, dan progres melebihi batas: sisa tidak negatif dan progres dibatasi 1
+00:01 +57: test/domain/mvp_business_logic_test.dart: BR5 - DailyNutrition sisa, kelebihan, dan progres tanggal dinormalisasi ke awal hari
+00:01 +58: test/domain/product_test.dart: Product memakai data per saji jika tersedia
+00:01 +59: test/domain/product_test.dart: Product memakai data per 100 g jika data per saji tidak ada
+00:01 +60: test/domain/product_test.dart: Product mendeteksi produk tanpa data natrium
+00:01 +61: test/domain/product_test.dart: GetProductByBarcode meneruskan barcode valid yang sudah di-trim ke repository
+00:01 +62: test/domain/product_test.dart: GetProductByBarcode menolak barcode yang bukan 8 sampai 13 digit angka tanpa memanggil repository
+00:02 +63: test/domain/risk_status_test.dart: status aman sampai 1500 mg
+00:02 +64: test/domain/risk_status_test.dart: status mendekati batas di atas 1500 mg sampai 2000 mg
+00:02 +65: test/domain/risk_status_test.dart: status bahaya di atas 2000 mg
+00:02 +66: test/domain/send_sodium_alert_test.dart: shouldAlert memberi peringatan hanya saat status naik ke Mendekati Batas atau Bahaya
+00:02 +67: test/domain/send_sodium_alert_test.dart: shouldAlert tidak memberi peringatan jika status tetap, turun, atau masih Aman
+00:02 +68: test/domain/send_sodium_alert_test.dart: shouldAlert tidak memberi peringatan saat pertama kali dibuka atau beda hari
+00:02 +69: test/domain/send_sodium_alert_test.dart: mengirim notifikasi Mendekati Batas dengan sisa batas
+00:02 +70: test/domain/send_sodium_alert_test.dart: mengirim notifikasi Bahaya dengan kelebihan batas
+00:02 +71: test/domain/send_sodium_alert_test.dart: tidak mengirim notifikasi jika pengguna mematikan peringatan
+00:02 +72: test/domain/sync_consumptions_test.dart: GetServerConsumptions mengurutkan data server dari yang terbaru
+00:02 +73: test/domain/sync_consumptions_test.dart: UploadConsumptions mengirim semua data lokal tanpa duplikasi di server
+00:02 +74: test/domain/sync_consumptions_test.dart: RestoreConsumptions menyimpan data baru dan memperbarui data yang sudah ada di perangkat
+00:02 +75: test/domain/sync_consumptions_test.dart: RestoreConsumptions gagal tidak mengubah data lokal
+00:02 +76: test/domain/update_consumption_test.dart: mengubah nama (di-trim) dan sodium tanpa mengubah id, sumber, dan waktu
+00:02 +77: test/domain/update_consumption_test.dart: menolak input tidak valid tanpa memanggil repository
+00:02 +78: test/domain/usecases_test.dart: RecordConsumption menyimpan konsumsi manual dengan nama yang sudah di-trim
+00:02 +79: test/domain/usecases_test.dart: RecordConsumption menolak sodium nol, negatif, dan bukan angka berhingga tanpa menyimpan
+00:02 +80: test/domain/usecases_test.dart: RecordConsumption menolak nama makanan kosong
+00:02 +81: test/domain/usecases_test.dart: GetDailySummary menjumlahkan sodium hari ini saja dan menentukan status risiko
+00:02 +82: test/domain/validation/consumption_rules_test.dart: validateSodiumMg menerima nilai 1 sampai 10000 mg
+00:02 +83: test/domain/validation/consumption_rules_test.dart: validateSodiumMg menolak nilai di atas 10000 mg
+00:02 +84: test/domain/validation/consumption_rules_test.dart: validateSodiumMg menolak kosong, bukan angka, dan nol atau negatif
+00:02 +85: test/domain/validation/consumption_rules_test.dart: validateProductName menolak nama kosong dan menerima nama berisi
+00:02 +86: test/domain/validation/product_rules_test.dart: input_rules parseDecimal menerima koma sebagai pemisah desimal dan menolak bukan angka
+00:02 +87: test/domain/validation/product_rules_test.dart: input_rules validatePositiveNumber memakai label yang sama untuk semua pesan
+00:02 +88: test/domain/validation/product_rules_test.dart: validateBarcode menerima 8 sampai 13 digit
+00:02 +89: test/domain/validation/product_rules_test.dart: validateBarcode menolak kosong, huruf, dan panjang salah
+00:02 +90: test/domain/validation/product_rules_test.dart: validateAmount label mengikuti satuan produk
+00:02 +91: test/domain/validation/product_rules_test.dart: validateConsumptionInput (dipakai use case) memakai pesan yang sama dengan validator form
+00:02 +92: test/presentation/providers/add_consumption_notifier_test.dart: state awal adalah loading
+00:03 +93: test/presentation/providers/add_consumption_notifier_test.dart: load menghasilkan success, empty, atau error sesuai hasil repository
+[SodiScan] 2026-11-20T00:21:21.332348 [WARN] Konsumsi: Ringkasan harian gagal dimuat | StorageFailure: load failed
+00:03 +94: test/presentation/providers/add_consumption_notifier_test.dart: submit kedua saat submit pertama berjalan diabaikan
+[SodiScan] 2026-11-20T00:21:21.345333 [INFO] Konsumsi: Simpan berhasil
+00:03 +95: test/presentation/providers/add_consumption_notifier_test.dart: submit gagal menyimpan pesan error dan mengembalikan isSubmitting ke false
+[SodiScan] 2026-11-20T00:21:21.350344 [WARN] Konsumsi: Simpan gagal | StorageFailure: save failed
+00:03 +96: test/presentation/providers/add_consumption_notifier_test.dart: delete menghapus konsumsi lalu menghitung ulang ringkasan harian
+[SodiScan] 2026-11-20T00:21:21.355974 [INFO] Konsumsi: Hapus konsumsi indomie-1 berhasil
+[SodiScan] 2026-11-20T00:21:21.357141 [WARN] Konsumsi: Hapus konsumsi indomie-1 gagal | StorageFailure: delete failed
+00:03 +97: test/presentation/providers/add_consumption_notifier_test.dart: update mengubah konsumsi lalu ringkasan dihitung ulang
+[SodiScan] 2026-11-20T00:21:21.363586 [INFO] Konsumsi: Simpan berhasil
+00:03 +98: test/presentation/providers/add_consumption_notifier_test.dart: update gagal di storage menampilkan pesan error
+[SodiScan] 2026-11-20T00:21:21.369448 [WARN] Konsumsi: Simpan gagal | StorageFailure: update failed
+00:03 +99: test/presentation/providers/add_consumption_notifier_test.dart: notifikasi dikirim saat catatan baru membuat status naik ke Bahaya
+[SodiScan] 2026-11-20T00:21:21.379117 [INFO] Konsumsi: Simpan berhasil
+[SodiScan] 2026-11-20T00:21:21.381116 [INFO] Konsumsi: Notifikasi natrium dikirim (danger)
+[SodiScan] 2026-11-20T00:21:21.381116 [INFO] Konsumsi: Simpan berhasil
+00:03 +100: test/presentation/providers/app_lock_notifier_test.dart: kunci mati: aplikasi langsung terbuka tanpa autentikasi
+00:03 +101: test/presentation/providers/app_lock_notifier_test.dart: kunci aktif: autentikasi berhasil membuka aplikasi
+[SodiScan] 2026-11-20T00:21:21.478085 [INFO] KunciAplikasi: Hasil autentikasi: success
+00:03 +102: test/presentation/providers/app_lock_notifier_test.dart: dibatalkan pengguna: tetap terkunci dengan pesan, lalu bisa dicoba lagi
+[SodiScan] 2026-11-20T00:21:21.490667 [INFO] KunciAplikasi: Hasil autentikasi: cancelled
+[SodiScan] 2026-11-20T00:21:21.492220 [INFO] KunciAplikasi: Hasil autentikasi: success
+00:03 +103: test/presentation/providers/app_lock_notifier_test.dart: terlalu banyak percobaan dan gagal tetap terkunci dengan pesan berbeda
+[SodiScan] 2026-11-20T00:21:21.498410 [INFO] KunciAplikasi: Hasil autentikasi: lockedOut
+[SodiScan] 2026-11-20T00:21:21.498410 [INFO] KunciAplikasi: Hasil autentikasi: failed
+00:03 +104: test/presentation/providers/app_lock_notifier_test.dart: kunci layar HP dihapus: kunci aplikasi dimatikan agar pengguna tidak terkunci permanen
+[SodiScan] 2026-11-20T00:21:21.503968 [INFO] KunciAplikasi: Hasil autentikasi: notAvailable
+00:03 +105: test/presentation/providers/app_lock_notifier_test.dart: terkunci lagi setelah di latar belakang lebih lama dari batas waktu
+[SodiScan] 2026-11-20T00:21:21.511600 [INFO] KunciAplikasi: Hasil autentikasi: success
+[SodiScan] 2026-11-20T00:21:21.513138 [INFO] KunciAplikasi: Hasil autentikasi: cancelled
+00:03 +106: test/presentation/providers/base_notifier_test.dart: StateNotifier emit mengganti state dan memberi tahu listener
+00:03 +107: test/presentation/providers/base_notifier_test.dart: StateNotifier emit setelah dispose diabaikan tanpa error
+00:03 +108: test/presentation/providers/base_notifier_test.dart: runSubmit mengembalikan null jika aksi berhasil
+[SodiScan] 2026-11-20T00:21:21.639058 [INFO] Submit: Simpan berhasil
+00:03 +109: test/presentation/providers/base_notifier_test.dart: runSubmit mengembalikan pesan ValidationFailure apa adanya
+[SodiScan] 2026-11-20T00:21:21.651577 [DEBUG] Submit: Validasi gagal: Nama wajib
+00:03 +110: test/presentation/providers/base_notifier_test.dart: runSubmit mengembalikan pesan cadangan untuk exception lain
+[SodiScan] 2026-11-20T00:21:21.657750 [WARN] Submit: Simpan gagal | StorageFailure: disk penuh
+00:03 +111: test/presentation/providers/history_notifier_test.dart: load menghasilkan success, empty, atau error sesuai hasil repository
+00:03 +112: test/presentation/providers/product_lookup_notifier_test.dart: state awal idle
+00:03 +113: test/presentation/providers/settings_notifier_test.dart: mengaktifkan peringatan meminta izin notifikasi lalu menyimpan
+00:03 +113: test/presentation/providers/product_lookup_notifier_test.dart: search menghasilkan success, empty, atau error
+[SodiScan] 2026-11-20T00:21:22.176010 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:22.187418 [INFO] Produk: Hasil barcode 089686010947: success
+[SodiScan] 2026-11-20T00:21:22.189417 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:22.189417 [INFO] Produk: Hasil barcode 089686010947: empty
+[SodiScan] 2026-11-20T00:21:22.190593 [INFO] Produk: Cari barcode 8991002101234
+[SodiScan] 2026-11-20T00:21:22.191420 [INFO] Produk: Hasil barcode 8991002101234: empty
+[SodiScan] 2026-11-20T00:21:22.191420 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:22.193442 [WARN] Produk: Pencarian barcode 089686010947 gagal | NetworkFailure: lookup failed
+00:03 +114: test/presentation/providers/settings_notifier_test.dart: mengaktifkan peringatan meminta izin notifikasi lalu menyimpan
+00:03 +115: test/presentation/providers/product_lookup_notifier_test.dart: retry mencari ulang barcode terakhir
+[SodiScan] 2026-11-20T00:21:22.205393 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:22.205393 [WARN] Produk: Pencarian barcode 089686010947 gagal | NetworkFailure: lookup failed
+[SodiScan] 2026-11-20T00:21:22.206392 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:22.206392 [INFO] Produk: Hasil barcode 089686010947: success
+00:03 +116: test/presentation/providers/settings_notifier_test.dart: izin notifikasi ditolak: switch tetap mati dan pesan arahan ditampilkan
+00:03 +117: test/presentation/providers/product_lookup_notifier_test.dart: pencarian kedua saat loading diabaikan
+[SodiScan] 2026-11-20T00:21:22.219980 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:22.220997 [INFO] Produk: Hasil barcode 089686010947: success
+00:03 +118: test/presentation/providers/settings_notifier_test.dart: mematikan peringatan tidak meminta izin
+00:03 +119: test/presentation/providers/product_lookup_notifier_test.dart: submit menyimpan konsumsi hasil scan satu kali walaupun dipanggil dua kali
+00:03 +120: test/presentation/providers/product_lookup_notifier_test.dart: submit menyimpan konsumsi hasil scan satu kali walaupun dipanggil dua kali
+00:03 +121: test/presentation/providers/product_lookup_notifier_test.dart: submit menyimpan konsumsi hasil scan satu kali walaupun dipanggil dua kali
+00:03 +122: test/presentation/providers/product_lookup_notifier_test.dart: submit menyimpan konsumsi hasil scan satu kali walaupun dipanggil dua kali
+[SodiScan] 2026-11-20T00:21:22.228309 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:22.228309 [INFO] Produk: Hasil barcode 089686010947: success
+[SodiScan] 2026-11-20T00:21:22.253933 [INFO] Produk: Simpan berhasil
+00:03 +123: test/presentation/providers/product_lookup_notifier_test.dart: submit gagal menyimpan pesan error
+[SodiScan] 2026-11-20T00:21:22.287478 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:22.288478 [INFO] Produk: Hasil barcode 089686010947: success
+[SodiScan] 2026-11-20T00:21:22.288478 [WARN] Produk: Simpan gagal | StorageFailure: save failed
+00:04 +124: test/presentation/screens/add_consumption/delete_consumption_test.dart: hapus konsumsi setelah konfirmasi lalu total dan status dihitung ulang
+00:06 +125: test/presentation/screens/add_consumption/delete_consumption_test.dart: hapus konsumsi setelah konfirmasi lalu total dan status dihitung ulang
+00:07 +126: test/presentation/screens/add_consumption/delete_consumption_test.dart: hapus konsumsi setelah konfirmasi lalu total dan status dihitung ulang
+00:07 +127: test/presentation/screens/add_consumption/delete_consumption_test.dart: hapus konsumsi setelah konfirmasi lalu total dan status dihitung ulang
+[SodiScan] 2026-11-20T00:21:25.605582 [INFO] Konsumsi: Hapus konsumsi keripik-1 berhasil
+00:07 +128: test/presentation/screens/add_consumption/edit_consumption_test.dart: form edit terisi data lama lalu perubahan tampil di Beranda
+00:08 +128: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: State 4 - menampilkan error dan tombol Coba Lagi memuat ulang data
+[SodiScan] 2026-11-20T00:21:25.937060 [WARN] Konsumsi: Ringkasan harian gagal dimuat | StorageFailure: load failed
+00:08 +129: test/presentation/screens/add_consumption/edit_consumption_test.dart: form edit terisi data lama lalu perubahan tampil di Beranda
+00:08 +130: test/presentation/screens/add_consumption/edit_consumption_test.dart: form edit terisi data lama lalu perubahan tampil di Beranda
+00:08 +130: test/presentation/screens/add_consumption/delete_consumption_test.dart: menghapus konsumsi terakhir menampilkan empty state
+[SodiScan] 2026-11-20T00:21:26.689456 [INFO] Konsumsi: Hapus konsumsi indomie-1 berhasil
+00:08 +131: test/presentation/screens/add_consumption/edit_consumption_test.dart: form edit terisi data lama lalu perubahan tampil di Beranda
+[SodiScan] 2026-11-20T00:21:26.444304 [INFO] Konsumsi: Simpan berhasil
+00:08 +132: test/presentation/screens/history/history_screen_test.dart: menampilkan konsumsi per tanggal beserta total dan status risiko
+00:08 +133: test/presentation/screens/history/history_screen_test.dart: menampilkan konsumsi per tanggal beserta total dan status risiko
+00:08 +133: test/presentation/screens/lock/app_lock_gate_test.dart: menunggu autentikasi - layar kunci dengan loading menutupi Beranda
+[SodiScan] 2026-11-20T00:21:27.185228 [INFO] KunciAplikasi: Hasil autentikasi: success
+00:08 +134: test/presentation/screens/history/history_screen_test.dart: menampilkan konsumsi per tanggal beserta total dan status risiko
+00:08 +135: test/presentation/screens/home/home_screen_test.dart: Beranda menampilkan tanggal, total, progres, sisa batas, dan tombol aksi
+00:08 +135: test/presentation/screens/add_consumption/delete_consumption_test.dart: gagal menghapus menampilkan pesan error dan data tetap ada
+[SodiScan] 2026-11-20T00:21:27.074313 [WARN] Konsumsi: Hapus konsumsi indomie-1 gagal | StorageFailure: delete failed
+00:08 +136: test/presentation/screens/home/home_screen_test.dart: Beranda menampilkan tanggal, total, progres, sisa batas, dan tombol aksi
+00:09 +137: test/presentation/screens/logs/log_screen_test.dart: empty state saat belum ada log
+00:09 +137: test/presentation/screens/lock/app_lock_gate_test.dart: dibatalkan - pesan tampil, tombol Buka Kunci membuka aplikasi
+[SodiScan] 2026-11-20T00:21:27.288920 [INFO] KunciAplikasi: Hasil autentikasi: cancelled
+[SodiScan] 2026-11-20T00:21:27.501150 [INFO] KunciAplikasi: Hasil autentikasi: success
+00:09 +138: test/presentation/screens/logs/log_screen_test.dart: empty state saat belum ada log
+00:09 +139: test/presentation/screens/logs/log_screen_test.dart: empty state saat belum ada log
+00:09 +139: test/presentation/screens/lock/app_lock_gate_test.dart: HP tanpa kunci layar - aplikasi terbuka dengan pesan penjelasan
+[SodiScan] 2026-11-20T00:21:27.590678 [INFO] KunciAplikasi: Hasil autentikasi: notAvailable
+00:09 +140: test/presentation/screens/logs/log_screen_test.dart: empty state saat belum ada log
+00:09 +141: test/presentation/screens/logs/log_screen_test.dart: empty state saat belum ada log
+00:09 +142: test/presentation/screens/logs/log_screen_test.dart: empty state saat belum ada log
+00:09 +143: test/presentation/screens/logs/log_screen_test.dart: empty state saat belum ada log
+00:10 +144: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: State 5 - validasi form menolak input kosong, bukan angka, dan nol
+00:10 +145: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Idle - menampilkan petunjuk sebelum pencarian
+00:10 +146: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Idle - menampilkan petunjuk sebelum pencarian
+00:11 +146: test/presentation/screens/home/home_screen_test.dart: tombol Input Manual membuka form, simpan kembali ke Beranda dengan total baru
+[SodiScan] 2026-11-20T00:21:28.969472 [INFO] Konsumsi: Simpan berhasil
+00:11 +147: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Idle - menampilkan petunjuk sebelum pencarian
+00:11 +148: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Idle - menampilkan petunjuk sebelum pencarian
+00:11 +149: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: State 6 - submit menampilkan loading, menonaktifkan tombol, dan mencegah double submit
+[SodiScan] 2026-11-20T00:21:29.340569 [INFO] Konsumsi: Simpan berhasil
+00:11 +150: test/presentation/screens/home/home_screen_test.dart: Pindai Barcode lalu pilih Ketik Barcode, produk tidak ditemukan diarahkan ke Input Manual
+00:11 +151: test/presentation/screens/home/home_screen_test.dart: Pindai Barcode lalu pilih Ketik Barcode, produk tidak ditemukan diarahkan ke Input Manual
+[SodiScan] 2026-11-20T00:21:29.891563 [INFO] Produk: Cari barcode 12345678
+[SodiScan] 2026-11-20T00:21:29.895104 [INFO] Produk: Hasil barcode 12345678: empty
+00:12 +152: test/presentation/screens/scanner/scanner_status_view_test.dart: Loading - menampilkan indikator saat kamera disiapkan
+00:12 +152: test/presentation/screens/add_consumption/add_consumption_screen_test.dart: Submit error - pesan gagal tampil dan form tetap bisa digunakan
+[SodiScan] 2026-11-20T00:21:30.421213 [WARN] Konsumsi: Simpan gagal | StorageFailure: save failed
+00:12 +153: test/presentation/screens/scanner/scanner_status_view_test.dart: Loading - menampilkan indikator saat kamera disiapkan
+00:12 +154: test/presentation/screens/scanner/scanner_status_view_test.dart: Loading - menampilkan indikator saat kamera disiapkan
+00:12 +155: test/presentation/screens/scanner/scanner_status_view_test.dart: Loading - menampilkan indikator saat kamera disiapkan
+00:12 +155: test/presentation/screens/home/home_screen_test.dart: kamera membaca barcode lalu Cari Produk langsung mencari produk tersebut
+[SodiScan] 2026-11-20T00:21:30.520137 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:30.600140 [INFO] Produk: Hasil barcode 089686010947: success
+00:12 +156: test/presentation/screens/scanner/scanner_status_view_test.dart: Loading - menampilkan indikator saat kamera disiapkan
+00:12 +157: test/presentation/screens/scanner/scanner_status_view_test.dart: Loading - menampilkan indikator saat kamera disiapkan
+00:12 +158: test/presentation/screens/scanner/scanner_status_view_test.dart: Loading - menampilkan indikator saat kamera disiapkan
+00:12 +159: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Loading - menampilkan indikator dan menonaktifkan tombol cari
+[SodiScan] 2026-11-20T00:21:30.917972 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:31.048614 [INFO] Produk: Hasil barcode 089686010947: success
+00:13 +160: test/presentation/screens/scanner/scanner_status_view_test.dart: Izin ditolak - menjelaskan cara mengizinkan dan menyediakan Coba Lagi serta Ketik Barcode
+00:13 +161: test/presentation/screens/server_sync/server_sync_screen_test.dart: Loading - indikator tampil selama data server dimuat
+00:13 +162: test/presentation/screens/server_sync/server_sync_screen_test.dart: Loading - indikator tampil selama data server dimuat
+00:13 +163: test/presentation/screens/server_sync/server_sync_screen_test.dart: Loading - indikator tampil selama data server dimuat
+00:13 +163: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Success - menampilkan data produk dan form porsi
+[SodiScan] 2026-11-20T00:21:31.646551 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:31.647564 [INFO] Produk: Hasil barcode 089686010947: success
+00:13 +164: test/presentation/screens/server_sync/server_sync_screen_test.dart: Loading - indikator tampil selama data server dimuat
+00:14 +164: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Empty - produk tidak ditemukan dan produk tanpa data natrium
+[SodiScan] 2026-11-20T00:21:32.107044 [INFO] Produk: Cari barcode 0000000000000
+[SodiScan] 2026-11-20T00:21:32.107044 [INFO] Produk: Hasil barcode 0000000000000: empty
+[SodiScan] 2026-11-20T00:21:32.321860 [INFO] Produk: Cari barcode 8991002101234
+[SodiScan] 2026-11-20T00:21:32.323060 [INFO] Produk: Hasil barcode 8991002101234: empty
+00:14 +165: test/presentation/screens/server_sync/server_sync_screen_test.dart: Loading - indikator tampil selama data server dimuat
+00:14 +165: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Error + Retry - tombol Coba Lagi mencari ulang barcode yang sama
+[SodiScan] 2026-11-20T00:21:32.771314 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:32.775210 [WARN] Produk: Pencarian barcode 089686010947 gagal | NetworkFailure: lookup failed
+[SodiScan] 2026-11-20T00:21:32.849838 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:32.918879 [INFO] Produk: Hasil barcode 089686010947: success
+00:14 +166: test/presentation/screens/server_sync/server_sync_screen_test.dart: Loading - indikator tampil selama data server dimuat
+00:15 +167: test/presentation/screens/settings/settings_screen_test.dart: menampilkan pengaturan tersimpan
+00:16 +167: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Validasi porsi - menolak kosong, bukan angka, dan nol
+[SodiScan] 2026-11-20T00:21:33.589752 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:33.590949 [INFO] Produk: Hasil barcode 089686010947: success
+00:16 +168: test/presentation/screens/settings/settings_screen_test.dart: menampilkan pengaturan tersimpan
+00:16 +169: test/presentation/screens/settings/settings_screen_test.dart: menampilkan pengaturan tersimpan
+00:16 +170: test/presentation/ux/accessibility_test.dart: Beranda memenuhi guideline ukuran tombol, label, dan kontras teks
+00:16 +171: test/presentation/ux/accessibility_test.dart: Beranda memenuhi guideline ukuran tombol, label, dan kontras teks
+00:16 +171: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Perhitungan natrium - memakai data per 100 g untuk produk tanpa data per saji
+[SodiScan] 2026-11-20T00:21:34.697830 [INFO] Produk: Cari barcode 089686600742
+[SodiScan] 2026-11-20T00:21:34.697830 [INFO] Produk: Hasil barcode 089686600742: success
+00:16 +172: test/presentation/ux/accessibility_test.dart: Beranda memenuhi guideline ukuran tombol, label, dan kontras teks
+00:16 +172: test/presentation/screens/server_sync/server_sync_screen_test.dart: Error + Retry - gagal terhubung lalu berhasil setelah Coba Lagi
+[SodiScan] 2026-11-20T00:21:34.868228 [WARN] Sinkronisasi: Data server gagal dimuat | NetworkFailure: offline
+00:16 +173: test/presentation/ux/accessibility_test.dart: Beranda memenuhi guideline ukuran tombol, label, dan kontras teks
+00:16 +174: test/presentation/ux/accessibility_test.dart: Beranda memenuhi guideline ukuran tombol, label, dan kontras teks
+00:16 +175: test/presentation/ux/action_feedback_test.dart: Kirim ke Server - tombol yang ditekan berubah jadi "Mengirim..." lalu muncul hasil
+00:16 +176: test/presentation/ux/action_feedback_test.dart: Kirim ke Server - tombol yang ditekan berubah jadi "Mengirim..." lalu muncul hasil
+00:17 +176: test/presentation/screens/server_sync/server_sync_screen_test.dart: Error JSON rusak menampilkan pesan data tidak valid
+[SodiScan] 2026-11-20T00:21:35.306878 [WARN] Sinkronisasi: Data server gagal dimuat | DataFormatFailure: rusak
+00:17 +177: test/presentation/ux/action_feedback_test.dart: Kirim ke Server - tombol yang ditekan berubah jadi "Mengirim..." lalu muncul hasil
+00:17 +178: test/presentation/ux/action_feedback_test.dart: Kirim ke Server - tombol yang ditekan berubah jadi "Mengirim..." lalu muncul hasil
+00:17 +179: test/presentation/ux/action_feedback_test.dart: Kirim ke Server - tombol yang ditekan berubah jadi "Mengirim..." lalu muncul hasil
+00:17 +179: test/presentation/screens/server_sync/server_sync_screen_test.dart: Kirim ke Server menyimpan data lokal ke backend lalu memuat ulang
+[SodiScan] 2026-11-20T00:21:35.653184 [INFO] Sinkronisasi: Mulai upload
+[SodiScan] 2026-11-20T00:21:35.656183 [INFO] Sinkronisasi: upload selesai: 1 catatan dikirim ke server.
+00:17 +180: test/presentation/ux/action_feedback_test.dart: Kirim ke Server - tombol yang ditekan berubah jadi "Mengirim..." lalu muncul hasil
+00:17 +180: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Submit loading - tombol nonaktif, double tap dicegah, lalu kembali dengan hasil true
+[SodiScan] 2026-11-20T00:21:35.181467 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:35.182636 [INFO] Produk: Hasil barcode 089686010947: success
+[SodiScan] 2026-11-20T00:21:35.659200 [INFO] Produk: Simpan berhasil
+00:17 +181: test/presentation/ux/action_feedback_test.dart: Kirim ke Server - tombol yang ditekan berubah jadi "Mengirim..." lalu muncul hasil
+00:17 +182: test/presentation/ux/action_feedback_test.dart: Kirim ke Server - tombol yang ditekan berubah jadi "Mengirim..." lalu muncul hasil
+[SodiScan] 2026-11-20T00:21:35.688363 [INFO] Sinkronisasi: Mulai upload
+[SodiScan] 2026-11-20T00:21:35.801118 [INFO] Sinkronisasi: upload selesai: 1 catatan dikirim ke server.
+00:17 +183: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:18 +184: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:18 +184: test/presentation/screens/server_sync/server_sync_screen_test.dart: tombol sinkronisasi nonaktif selama proses agar tidak double tap
+[SodiScan] 2026-11-20T00:21:36.205358 [INFO] Sinkronisasi: Mulai upload
+[SodiScan] 2026-11-20T00:21:36.263417 [INFO] Sinkronisasi: upload selesai: 1 catatan dikirim ke server.
+00:18 +185: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:18 +185: test/presentation/screens/product_lookup/product_lookup_screen_test.dart: Submit error - pesan gagal tampil dan form tetap bisa digunakan
+[SodiScan] 2026-11-20T00:21:36.339225 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:36.339225 [INFO] Produk: Hasil barcode 089686010947: success
+[SodiScan] 2026-11-20T00:21:36.628510 [WARN] Produk: Simpan gagal | StorageFailure: save failed
+00:18 +186: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:18 +187: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:18 +187: test/presentation/ux/action_feedback_test.dart: Ambil ke HP - tombol yang ditekan berubah jadi "Mengambil..."
+[SodiScan] 2026-11-20T00:21:36.777839 [INFO] Sinkronisasi: Mulai restore
+[SodiScan] 2026-11-20T00:21:36.831715 [INFO] Sinkronisasi: restore selesai: 1 catatan dari server disimpan ke perangkat.
+00:18 +188: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:18 +188: test/presentation/screens/server_sync/server_sync_screen_test.dart: Ambil ke HP menyimpan data server ke perangkat
+[SodiScan] 2026-11-20T00:21:37.026250 [INFO] Sinkronisasi: Mulai restore
+[SodiScan] 2026-11-20T00:21:37.027719 [INFO] Sinkronisasi: restore selesai: 1 catatan dari server disimpan ke perangkat.
+00:18 +189: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:18 +190: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:19 +191: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:19 +191: test/presentation/ux/action_feedback_test.dart: Hapus - konfirmasi lalu pesan hasil, item hilang dari daftar
+[SodiScan] 2026-11-20T00:21:37.435986 [INFO] Konsumsi: Hapus konsumsi indomie-1 berhasil
+00:19 +192: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:19 +193: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:19 +194: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:19 +195: test/presentation/ux/keyboard_safe_test.dart: field aktif dan tombol Simpan tetap terlihat di atas keyboard
+00:19 +196: test/presentation/ux/adaptive_layout_test.dart: Tablet landscape - Riwayat tampil dua kartu per baris
+00:19 +197: test/presentation/ux/adaptive_layout_test.dart: Tablet landscape - Riwayat tampil dua kartu per baris
+00:19 +198: test/presentation/ux/accessibility_test.dart: teks diperbesar 200% - tidak overflow dan tombol aksi disusun vertikal
+00:20 +199: test/presentation/ux/keyboard_safe_test.dart: tombol Next di keyboard pindah ke field sodium, Done langsung menyimpan
+00:20 +199: test/presentation/ux/adaptive_layout_test.dart: Tablet landscape - Cari Produk: form di kiri, hasil di kanan
+[SodiScan] 2026-11-20T00:21:38.198039 [INFO] Produk: Cari barcode 089686010947
+[SodiScan] 2026-11-20T00:21:38.290293 [INFO] Produk: Hasil barcode 089686010947: success
+00:20 +200: test/presentation/ux/keyboard_safe_test.dart: tombol Next di keyboard pindah ke field sodium, Done langsung menyimpan
+[SodiScan] 2026-11-20T00:21:38.391205 [INFO] Konsumsi: Simpan berhasil
+00:20 +201: test/presentation/ux/accessibility_test.dart: teks diperbesar 200% di Riwayat dan Sinkronisasi - tidak overflow
+00:20 +202: test/presentation/ux/keyboard_safe_test.dart: validasi gagal memfokuskan field pertama yang salah agar terlihat
+00:21 +203: test/presentation/ux/keyboard_safe_test.dart: tap di luar field menutup keyboard
+00:21 +204: All tests passed!

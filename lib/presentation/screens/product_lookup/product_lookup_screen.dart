@@ -21,6 +21,7 @@ class ProductLookupScreen extends StatelessWidget {
     final recordConsumption = context.read<RecordConsumption>();
 
     return MaterialPageRoute<bool>(
+      settings: const RouteSettings(name: '/product-lookup'),
       builder: (_) => ChangeNotifierProvider(
         create: (_) {
           final notifier = ProductLookupNotifier(

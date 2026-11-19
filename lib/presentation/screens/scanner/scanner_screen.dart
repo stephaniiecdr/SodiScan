@@ -17,7 +17,9 @@ class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
 
   static Future<ScanResult?> open(BuildContext context) {
-    return Navigator.of(context).push(MaterialPageRoute<ScanResult>(builder: (_) => const ScannerScreen()));
+    return Navigator.of(context).push(
+      MaterialPageRoute<ScanResult>(settings: const RouteSettings(name: '/scanner'), builder: (_) => const ScannerScreen()),
+    );
   }
 
   @override
