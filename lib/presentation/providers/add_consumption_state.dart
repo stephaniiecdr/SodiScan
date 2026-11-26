@@ -1,4 +1,5 @@
 import '../../domain/entities/daily_nutrition.dart';
+import '../../domain/entities/frequent_food.dart';
 
 enum LoadStatus { loading, success, empty, error }
 
@@ -11,7 +12,10 @@ class AddConsumptionState {
     this.submitErrorMessage,
     this.deletingId,
     this.deleteErrorMessage,
+    this.frequentFoods = const [],
   });
+
+  final List<FrequentFood> frequentFoods;
 
   final LoadStatus loadStatus;
   final DailyNutrition? summary;
@@ -31,6 +35,7 @@ class AddConsumptionState {
     String? submitErrorMessage,
     String? deletingId,
     String? deleteErrorMessage,
+    List<FrequentFood>? frequentFoods,
     bool clearLoadError = false,
     bool clearSubmitError = false,
     bool clearDeleting = false,
@@ -44,6 +49,7 @@ class AddConsumptionState {
       submitErrorMessage: clearSubmitError ? null : submitErrorMessage ?? this.submitErrorMessage,
       deletingId: clearDeleting ? null : deletingId ?? this.deletingId,
       deleteErrorMessage: clearDeleteError ? null : deleteErrorMessage ?? this.deleteErrorMessage,
+      frequentFoods: frequentFoods ?? this.frequentFoods,
     );
   }
 }

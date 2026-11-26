@@ -14,6 +14,7 @@ import 'package:sodiscan/data/repositories/consumption_sync_repository_impl.dart
 import 'package:sodiscan/data/repositories/settings_repository_impl.dart';
 import 'package:sodiscan/domain/entities/daily_nutrition.dart';
 import 'package:sodiscan/domain/entities/food_consumption.dart';
+import 'package:sodiscan/domain/entities/frequent_food.dart';
 import 'package:sodiscan/domain/entities/risk_status.dart';
 import 'package:sodiscan/domain/entities/sync_report.dart';
 import 'package:sodiscan/domain/repositories/settings_repository.dart';
@@ -22,8 +23,12 @@ import 'package:sodiscan/domain/services/notification_service.dart';
 import 'package:sodiscan/domain/usecases/delete_consumption.dart';
 import 'package:sodiscan/domain/usecases/get_consumption_history.dart';
 import 'package:sodiscan/domain/usecases/get_daily_summary.dart';
+import 'package:sodiscan/domain/usecases/get_frequent_foods.dart';
+import 'package:sodiscan/domain/usecases/record_consumption.dart';
 import 'package:sodiscan/domain/usecases/sync_consumptions.dart';
+import 'package:sodiscan/domain/usecases/update_consumption.dart';
 import 'package:sodiscan/domain/validation/settings_rules.dart';
+import 'package:sodiscan/presentation/providers/add_consumption_notifier.dart';
 import 'package:sodiscan/presentation/providers/server_sync_notifier.dart';
 import 'package:sodiscan/presentation/providers/settings_notifier.dart';
 import 'package:sodiscan/presentation/screens/settings/settings_screen.dart';
@@ -31,6 +36,7 @@ import 'package:sodiscan/presentation/screens/settings/settings_screen.dart';
 import '../helpers/fake_consumption_repository.dart';
 import '../helpers/fake_consumption_sync_repository.dart';
 import '../helpers/fake_device_services.dart';
+import '../helpers/pump_home_app.dart';
 
 FoodConsumption _item(String id, String name, {double sodium = 500, DateTime? at}) {
   return FoodConsumption(
@@ -267,6 +273,130 @@ void main() {
         expect(settings.settings.dailyLimitMg, 2000);
         expect(find.byKey(const Key('dailyLimitField')), findsNothing);
       });
+    });
+  });
+
+  group('Fitur #17 catat cepat makanan yang sering dicatat', () {
+    test('mengurutkan dari yang paling sering, lalu yang terbaru', () async {
+      final repository = FakeConsumptionRepository(items: [
+        _item('1', 'Roti', at: fixedNow.subtract(const Duration(days: 2))),
+        _item('2', 'Indomie', at: fixedNow.subtract(const Duration(days: 2))),
+        _item('3', 'Indomie', at: fixedNow.subtract(const Duration(days: 1))),
+        _item('4', 'Bakso', at: fixedNow),
+      ]);
+
+      final foods = await GetFrequentFoods(repository)();
+
+      expect(foods.map((food) => food.productName), ['Indomie', 'Bakso', 'Roti']);
+      expect(foods.first.count, 2);
+    });
+
+    test('nama dengan huruf besar/kecil dan spasi berbeda dianggap makanan yang sama', () async {
+      final repository = FakeConsumptionRepository(items: [
+        _item('1', 'Indomie Goreng', at: fixedNow.subtract(const Duration(days: 1))),
+        _item('2', '  indomie   goreng ', at: fixedNow),
+      ]);
+
+      final foods = await GetFrequentFoods(repository)();
+
+      expect(foods, hasLength(1));
+      expect(foods.single.count, 2);
+    });
+
+    test('memakai natrium, barcode, dan sumber dari catatan terakhir', () async {
+      final repository = FakeConsumptionRepository(items: [
+        _item('1', 'Indomie Mi Goreng', sodium: 700, at: fixedNow.subtract(const Duration(days: 1))),
+        indomieConsumption(),
+      ]);
+
+      final food = (await GetFrequentFoods(repository)()).single;
+
+      expect(food.sodiumMg, 750);
+      expect(food.barcode, '089686010947');
+      expect(food.source, ConsumptionSource.scan);
+    });
+
+    test('dibatasi sesuai limit dan kosong jika belum ada catatan', () async {
+      final repository = FakeConsumptionRepository(items: [for (var i = 0; i < 8; i++) _item('$i', 'Makanan $i')]);
+
+      expect(await GetFrequentFoods(repository, limit: 5)(), hasLength(5));
+      expect(await GetFrequentFoods(FakeConsumptionRepository())(), isEmpty);
+    });
+
+    AddConsumptionNotifier buildNotifier(FakeConsumptionRepository repository) {
+      return AddConsumptionNotifier(
+        getDailySummary: GetDailySummary(repository),
+        recordConsumption: RecordConsumption(repository, clock: () => fixedNow),
+        updateConsumption: UpdateConsumption(repository),
+        deleteConsumption: DeleteConsumption(repository),
+        getFrequentFoods: GetFrequentFoods(repository),
+        clock: () => fixedNow,
+      );
+    }
+
+    test('notifier memuat daftar catat cepat bersama ringkasan', () async {
+      final notifier = buildNotifier(FakeConsumptionRepository(items: [indomieConsumption()]));
+
+      await notifier.load();
+
+      expect(notifier.state.frequentFoods.single.productName, 'Indomie Mi Goreng');
+    });
+
+    test('quickAdd mencatat ulang makanan dan memperbarui total hari ini', () async {
+      final repository = FakeConsumptionRepository(items: [indomieConsumption()]);
+      final notifier = buildNotifier(repository);
+      await notifier.load();
+
+      final saved = await notifier.quickAdd(notifier.state.frequentFoods.single);
+
+      expect(saved, isTrue);
+      expect(repository.items, hasLength(2));
+      expect(repository.items.last.source, ConsumptionSource.scan);
+      expect(repository.items.last.barcode, '089686010947');
+      expect(notifier.state.summary!.totalSodiumMg, 1500);
+      expect(notifier.state.frequentFoods.single.count, 2);
+    });
+
+    test('quickAdd gagal menyimpan menampilkan pesan error', () async {
+      final repository = FakeConsumptionRepository(items: [indomieConsumption()]);
+      final notifier = buildNotifier(repository);
+      await notifier.load();
+      repository.failSave = true;
+
+      expect(await notifier.quickAdd(notifier.state.frequentFoods.single), isFalse);
+      expect(notifier.state.submitErrorMessage, AddConsumptionNotifier.submitErrorText);
+    });
+
+    test('pesan sukses menyebut nama dan natrium', () {
+      final food = FrequentFood(
+        productName: 'Bakso',
+        sodiumMg: 800,
+        source: ConsumptionSource.manual,
+        count: 3,
+        lastConsumedAt: fixedNow,
+      );
+
+      expect(AddConsumptionNotifier.quickAddSuccessText(food), 'Bakso dicatat lagi (800 mg).');
+    });
+
+    testWidgets('UI: chip Catat Cepat mencatat makanan dengan sekali tekan', (tester) async {
+      final repository = FakeConsumptionRepository(items: [indomieConsumption()]);
+      await pumpHomeApp(tester, repository: repository, quickAdd: true);
+
+      expect(find.byKey(const Key('quickAddSection')), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const Key('quickAdd_0')));
+      await tester.tap(find.byKey(const Key('quickAdd_0')));
+      await tester.pumpAndSettle();
+
+      expect(repository.items, hasLength(2));
+      expect(find.text('Indomie Mi Goreng dicatat lagi (750 mg).'), findsOneWidget);
+      expect(find.text('1500 mg / 2000 mg'), findsOneWidget);
+    });
+
+    testWidgets('UI: bagian Catat Cepat tidak tampil jika belum ada riwayat', (tester) async {
+      await pumpHomeApp(tester, repository: FakeConsumptionRepository(), quickAdd: true);
+
+      expect(find.byKey(const Key('quickAddSection')), findsNothing);
     });
   });
 

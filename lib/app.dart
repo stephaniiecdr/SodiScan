@@ -13,6 +13,7 @@ import 'domain/services/notification_service.dart';
 import 'domain/usecases/delete_consumption.dart';
 import 'domain/usecases/get_consumption_history.dart';
 import 'domain/usecases/get_daily_summary.dart';
+import 'domain/usecases/get_frequent_foods.dart';
 import 'domain/usecases/get_product_by_barcode.dart';
 import 'domain/usecases/record_consumption.dart';
 import 'domain/usecases/send_sodium_alert.dart';
@@ -65,6 +66,7 @@ class SodiScanApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => AddConsumptionNotifier(
             getDailySummary: GetDailySummary(consumptionRepository, settingsRepository: settingsRepository),
+            getFrequentFoods: GetFrequentFoods(consumptionRepository),
             recordConsumption: recordConsumption,
             updateConsumption: UpdateConsumption(consumptionRepository),
             deleteConsumption: DeleteConsumption(consumptionRepository),
