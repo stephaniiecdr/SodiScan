@@ -11,3 +11,15 @@ class UploadReport {
 
   bool get hasFailures => failed.isNotEmpty;
 }
+
+/// Hasil "Ambil ke HP": catatan baru, catatan yang diperbarui, dan catatan lokal
+/// yang dipertahankan karena lebih baru.
+class RestoreReport {
+  const RestoreReport({this.added = 0, this.updated = 0, this.keptLocal = 0});
+
+  final int added;
+  final int updated;
+  final int keptLocal;
+
+  int get savedCount => added + updated;
+}

@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sodiscan/domain/entities/food_consumption.dart';
 import 'package:sodiscan/domain/entities/sync_report.dart';
+import 'package:sodiscan/domain/usecases/record_consumption.dart';
+import 'package:sodiscan/domain/usecases/update_consumption.dart';
 import 'package:sodiscan/presentation/providers/server_sync_notifier.dart';
 
 import '../helpers/fake_consumption_repository.dart';
@@ -35,6 +37,46 @@ void main() {
 
       expect(message, contains('Item0, Item1, Item2, dan lainnya'));
       expect(message, isNot(contains('Item3')));
+    });
+  });
+
+  group('Issue #2 pesan hasil "Ambil ke HP" dan updatedAt saat edit', () {
+    test('tanpa konflik memakai pesan lama', () {
+      expect(
+        ServerSyncNotifier.restoreMessage(const RestoreReport(added: 1, updated: 2)),
+        '3 catatan dari server disimpan ke perangkat.',
+      );
+    });
+
+    test('konflik menyebut catatan lokal yang dipertahankan', () {
+      final message = ServerSyncNotifier.restoreMessage(const RestoreReport(added: 1, keptLocal: 2));
+
+      expect(message, contains('1 catatan dari server disimpan'));
+      expect(message, contains('2 catatan lokal yang lebih baru dipertahankan'));
+    });
+
+    test('UpdateConsumption mengisi updatedAt dengan waktu edit', () async {
+      final editTime = fixedNow.add(const Duration(hours: 1));
+      final repository = FakeConsumptionRepository(items: [indomieConsumption()]);
+
+      final updated = await UpdateConsumption(repository, clock: () => editTime)(
+        indomieConsumption(),
+        productName: 'Indomie Soto',
+        sodiumMg: 820,
+      );
+
+      expect(updated.updatedAt, editTime);
+      expect(repository.items.single.lastModifiedAt, editTime);
+      expect(updated.consumedAt, indomieConsumption().consumedAt);
+    });
+
+    test('RecordConsumption membuat catatan baru tanpa updatedAt', () async {
+      final repository = FakeConsumptionRepository();
+
+      final created = await RecordConsumption(repository, clock: () => fixedNow)(productName: 'Roti', sodiumMg: 200);
+
+      expect(created.updatedAt, isNull);
+      expect(created.lastModifiedAt, fixedNow);
     });
   });
 }

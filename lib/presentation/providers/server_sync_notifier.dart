@@ -47,8 +47,8 @@ class ServerSyncNotifier extends StateNotifier<ServerSyncState> {
       });
 
   Future<String> restore() => _sync(SyncAction.restore, () async {
-        final count = await _restoreConsumptions();
-        return '$count catatan dari server disimpan ke perangkat.';
+        final report = await _restoreConsumptions();
+        return restoreMessage(report);
       });
 
   static String uploadMessage(UploadReport report) {
@@ -58,6 +58,12 @@ class ServerSyncNotifier extends StateNotifier<ServerSyncState> {
     final more = report.failed.length > 3 ? ', dan lainnya' : '';
     return '${report.successCount} dari ${report.total} catatan dikirim. '
         '${report.failed.length} gagal ($names$more). Tekan "Kirim ke Server" lagi untuk mengulang.';
+  }
+
+  static String restoreMessage(RestoreReport report) {
+    final parts = <String>['${report.savedCount} catatan dari server disimpan ke perangkat.'];
+    if (report.keptLocal > 0) parts.add('${report.keptLocal} catatan lokal yang lebih baru dipertahankan.');
+    return parts.join(' ');
   }
 
   Future<String> _sync(SyncAction syncAction, Future<String> Function() action) async {

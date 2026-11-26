@@ -8,6 +8,7 @@ class FoodConsumptionModel {
     required this.sodiumMg,
     required this.source,
     required this.consumedAt,
+    this.updatedAt,
   });
 
   factory FoodConsumptionModel.fromEntity(FoodConsumption entity) {
@@ -18,10 +19,12 @@ class FoodConsumptionModel {
       sodiumMg: entity.sodiumMg,
       source: entity.source.name,
       consumedAt: entity.consumedAt,
+      updatedAt: entity.updatedAt,
     );
   }
 
   factory FoodConsumptionModel.fromMap(Map<dynamic, dynamic> map) {
+    final updatedAt = map['updatedAt'];
     return FoodConsumptionModel(
       id: map['id'] as String,
       barcode: map['barcode'] as String?,
@@ -29,6 +32,7 @@ class FoodConsumptionModel {
       sodiumMg: (map['sodiumMg'] as num).toDouble(),
       source: map['source'] as String,
       consumedAt: DateTime.parse(map['consumedAt'] as String),
+      updatedAt: updatedAt is String ? DateTime.parse(updatedAt) : null,
     );
   }
 
@@ -41,6 +45,8 @@ class FoodConsumptionModel {
     final sodiumMg = json['sodiumMg'];
     final source = json['source'];
     final consumedAt = json['consumedAt'] is String ? DateTime.tryParse(json['consumedAt'] as String) : null;
+    final rawUpdatedAt = json['updatedAt'];
+    final updatedAt = _parseDate(rawUpdatedAt);
 
     if (id is! String || id.isEmpty) throw const FormatException('Field id wajib berupa teks.');
     if (barcode != null && barcode is! String) throw const FormatException('Field barcode harus teks atau null.');
@@ -54,6 +60,9 @@ class FoodConsumptionModel {
       throw const FormatException('Field source harus scan atau manual.');
     }
     if (consumedAt == null) throw const FormatException('Field consumedAt harus tanggal ISO 8601.');
+    if (rawUpdatedAt != null && updatedAt == null) {
+      throw const FormatException('Field updatedAt harus tanggal ISO 8601 atau null.');
+    }
 
     return FoodConsumptionModel(
       id: id,
@@ -62,6 +71,7 @@ class FoodConsumptionModel {
       sodiumMg: sodiumMg.toDouble(),
       source: source as String,
       consumedAt: consumedAt,
+      updatedAt: updatedAt,
     );
   }
 
@@ -71,6 +81,9 @@ class FoodConsumptionModel {
   final double sodiumMg;
   final String source;
   final DateTime consumedAt;
+  final DateTime? updatedAt;
+
+  static DateTime? _parseDate(Object? value) => value is String ? DateTime.tryParse(value) : null;
 
   Map<String, dynamic> toMap() {
     return {
@@ -80,6 +93,7 @@ class FoodConsumptionModel {
       'sodiumMg': sodiumMg,
       'source': source,
       'consumedAt': consumedAt.toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
     };
   }
 
@@ -96,6 +110,7 @@ class FoodConsumptionModel {
         orElse: () => ConsumptionSource.manual,
       ),
       consumedAt: consumedAt,
+      updatedAt: updatedAt,
     );
   }
 }

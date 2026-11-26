@@ -60,6 +60,8 @@ void main() {
         {...validJson, 'sodiumMg': '750'},
         {...validJson, 'source': 'robot'},
         {...validJson, 'consumedAt': 'kemarin'},
+        {...validJson, 'updatedAt': 'besok'},
+        {...validJson, 'updatedAt': 123},
       ];
 
       for (final sample in invalidSamples) {
@@ -125,6 +127,34 @@ void main() {
         final repository = ConsumptionSyncRepositoryImpl(dataSource(() => http.Response(body, 200)));
         await expectLater(repository.fetchFromServer(), throwsA(isA<DataFormatFailure>()), reason: body);
       }
+    });
+  });
+
+  group('Issue #2 updatedAt', () {
+    test('updatedAt opsional: tidak ada di JSON berarti null', () {
+      final model = FoodConsumptionModel.fromJson(validJson);
+
+      expect(model.updatedAt, isNull);
+      expect(model.toJson().containsKey('updatedAt'), isFalse);
+    });
+
+    test('updatedAt dibaca, dikirim, dan dipakai sebagai lastModifiedAt', () {
+      final json = {...validJson, 'updatedAt': '2026-10-02T08:00:00.000Z'};
+
+      final entity = FoodConsumptionModel.fromJson(json).toEntity();
+
+      expect(entity.updatedAt, DateTime.utc(2026, 10, 2, 8));
+      expect(entity.lastModifiedAt, entity.updatedAt);
+      expect(FoodConsumptionModel.fromEntity(entity).toJson()['updatedAt'], '2026-10-02T08:00:00.000Z');
+    });
+
+    test('fromMap/toMap Hive menyimpan updatedAt dan tetap kompatibel dengan data lama', () {
+      final updated = indomieConsumption().copyWith(updatedAt: fixedNow);
+      final restored = FoodConsumptionModel.fromMap(FoodConsumptionModel.fromEntity(updated).toMap()).toEntity();
+      final legacyMap = FoodConsumptionModel.fromEntity(indomieConsumption()).toMap()..remove('updatedAt');
+
+      expect(restored.updatedAt, fixedNow);
+      expect(FoodConsumptionModel.fromMap(legacyMap).updatedAt, isNull);
     });
   });
 }

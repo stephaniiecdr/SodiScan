@@ -46,9 +46,11 @@ void main() {
       _item('roti', 'Roti', fixedNow),
     ]);
 
-    final count = await RestoreConsumptions(server, local)();
+    final report = await RestoreConsumptions(server, local)();
 
-    expect(count, 2);
+    expect(report.savedCount, 2);
+    expect(report.added, 1);
+    expect(report.updated, 1);
     expect(local.items, hasLength(2));
     expect(local.items.firstWhere((item) => item.id == 'indomie-1').sodiumMg, 820);
   });
@@ -96,6 +98,53 @@ void main() {
 
       expect(retry.hasFailures, isFalse);
       expect(server.items.map((item) => item.id), unorderedEquals(['a', 'b']));
+    });
+  });
+
+  group('Issue #2 restore memakai kebijakan last-modified-wins', () {
+    test('catatan lokal yang diedit lebih baru tidak ditimpa versi server', () async {
+      final editedLocal = indomieConsumption().copyWith(sodiumMg: 600, updatedAt: fixedNow);
+      final local = FakeConsumptionRepository(items: [editedLocal]);
+      final server = FakeConsumptionSyncRepository(items: [indomieConsumption()]);
+
+      final report = await RestoreConsumptions(server, local)();
+
+      expect(report.keptLocal, 1);
+      expect(report.savedCount, 0);
+      expect(local.items.single.sodiumMg, 600);
+      expect(local.updateCalls, 0);
+    });
+
+    test('versi server yang lebih baru menimpa catatan lokal', () async {
+      final local = FakeConsumptionRepository(items: [indomieConsumption()]);
+      final server = FakeConsumptionSyncRepository(items: [
+        indomieConsumption().copyWith(sodiumMg: 900, updatedAt: fixedNow),
+      ]);
+
+      final report = await RestoreConsumptions(server, local)();
+
+      expect(report.updated, 1);
+      expect(local.items.single.sodiumMg, 900);
+    });
+
+    test('waktu ubah sama: versi server dipakai agar perangkat konsisten dengan server', () async {
+      final local = FakeConsumptionRepository(items: [indomieConsumption().copyWith(updatedAt: fixedNow)]);
+      final server = FakeConsumptionSyncRepository(items: [
+        indomieConsumption().copyWith(sodiumMg: 700, updatedAt: fixedNow),
+      ]);
+
+      final report = await RestoreConsumptions(server, local)();
+
+      expect(report.updated, 1);
+      expect(local.items.single.sodiumMg, 700);
+    });
+
+    test('lastModifiedAt memakai consumedAt jika belum pernah diubah', () {
+      final item = indomieConsumption();
+
+      expect(item.updatedAt, isNull);
+      expect(item.lastModifiedAt, item.consumedAt);
+      expect(item.copyWith(updatedAt: fixedNow).lastModifiedAt, fixedNow);
     });
   });
 

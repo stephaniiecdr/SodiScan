@@ -47,16 +47,26 @@ class RestoreConsumptions {
   final ConsumptionSyncRepository _syncRepository;
   final ConsumptionRepository _localRepository;
 
-  Future<int> call() async {
+  /// Kebijakan konflik: last-modified-wins. Catatan lokal yang diubah lebih
+  /// baru daripada versi server tidak ditimpa.
+  Future<RestoreReport> call() async {
     final serverItems = await _syncRepository.fetchFromServer();
-    final localIds = (await _localRepository.getAllConsumptions()).map((item) => item.id).toSet();
+    final localById = {for (final item in await _localRepository.getAllConsumptions()) item.id: item};
+    var added = 0;
+    var updated = 0;
+    var keptLocal = 0;
     for (final item in serverItems) {
-      if (localIds.contains(item.id)) {
-        await _localRepository.updateConsumption(item);
-      } else {
+      final local = localById[item.id];
+      if (local == null) {
         await _localRepository.saveConsumption(item);
+        added++;
+      } else if (local.lastModifiedAt.isAfter(item.lastModifiedAt)) {
+        keptLocal++;
+      } else {
+        await _localRepository.updateConsumption(item);
+        updated++;
       }
     }
-    return serverItems.length;
+    return RestoreReport(added: added, updated: updated, keptLocal: keptLocal);
   }
 }
