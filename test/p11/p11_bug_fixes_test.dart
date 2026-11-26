@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
 import 'package:sodiscan/core/errors/failures.dart';
+import 'package:sodiscan/data/datasources/local/consumption_local_data_source.dart';
 import 'package:sodiscan/data/models/food_consumption_model.dart';
+import 'package:sodiscan/data/repositories/consumption_repository_impl.dart';
 import 'package:sodiscan/domain/entities/food_consumption.dart';
 import 'package:sodiscan/domain/entities/product.dart';
 import 'package:sodiscan/domain/entities/sync_report.dart';
@@ -244,6 +248,55 @@ void main() {
 
       expect(model.consumedAt.isUtc, isFalse);
       expect(model.toEntity().consumedAt, DateTime.utc(2026, 10, 1, 23, 30).toLocal());
+    });
+  });
+
+  group('Issue #11 satu catatan Hive rusak tidak merusak seluruh riwayat', () {
+    late Directory tempDir;
+    late Box<Map> box;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('sodiscan_corrupt_test');
+      Hive.init(tempDir.path);
+      box = await Hive.openBox<Map>(ConsumptionLocalDataSource.boxName);
+    });
+
+    tearDown(() async {
+      await Hive.close();
+      await tempDir.delete(recursive: true);
+    });
+
+    test('catatan tanpa field wajib dilewati, catatan lain tetap dimuat', () async {
+      final repository = ConsumptionRepositoryImpl(ConsumptionLocalDataSource(box));
+      await repository.saveConsumption(indomieConsumption());
+      await box.put('rusak', {'id': 'rusak', 'productName': 'Tanpa sodium'});
+
+      final all = await repository.getAllConsumptions();
+
+      expect(all.map((item) => item.id), ['indomie-1']);
+    });
+
+    test('catatan dengan tanggal tidak valid dilewati', () async {
+      final repository = ConsumptionRepositoryImpl(ConsumptionLocalDataSource(box));
+      await repository.saveConsumption(indomieConsumption());
+      await box.put('tanggal', {
+        'id': 'tanggal',
+        'productName': 'Roti',
+        'sodiumMg': 100,
+        'source': 'manual',
+        'consumedAt': 'kemarin',
+      });
+
+      final today = await repository.getConsumptionsByDate(fixedNow);
+
+      expect(today.single.id, 'indomie-1');
+    });
+
+    test('box yang seluruhnya rusak menghasilkan daftar kosong, bukan error', () async {
+      await box.put('a', {'id': 1});
+      await box.put('b', {'sodiumMg': 'banyak'});
+
+      expect(ConsumptionLocalDataSource(box).getAll(), isEmpty);
     });
   });
 }
