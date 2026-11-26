@@ -1,13 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sodiscan/core/errors/failures.dart';
 import 'package:sodiscan/domain/entities/food_consumption.dart';
 import 'package:sodiscan/domain/entities/product.dart';
 import 'package:sodiscan/domain/entities/sync_report.dart';
+import 'package:sodiscan/domain/usecases/delete_consumption.dart';
+import 'package:sodiscan/domain/usecases/get_daily_summary.dart';
 import 'package:sodiscan/domain/usecases/get_product_by_barcode.dart';
 import 'package:sodiscan/domain/usecases/record_consumption.dart';
 import 'package:sodiscan/domain/usecases/update_consumption.dart';
 import 'package:sodiscan/domain/validation/consumption_rules.dart';
 import 'package:sodiscan/domain/validation/product_rules.dart';
+import 'package:sodiscan/presentation/providers/add_consumption_notifier.dart';
 import 'package:sodiscan/presentation/providers/product_lookup_notifier.dart';
 import 'package:sodiscan/presentation/providers/server_sync_notifier.dart';
 
@@ -143,6 +148,83 @@ void main() {
       expect(repository.items, isEmpty);
     });
   });
+
+  group('Issue #4 hapus gagal menyimpan pesan error di state', () {
+    AddConsumptionNotifier buildNotifier(FakeConsumptionRepository repository) {
+      return AddConsumptionNotifier(
+        getDailySummary: GetDailySummary(repository),
+        recordConsumption: RecordConsumption(repository, clock: () => fixedNow),
+        updateConsumption: UpdateConsumption(repository),
+        deleteConsumption: DeleteConsumption(repository),
+        clock: () => fixedNow,
+      );
+    }
+
+    test('gagal hapus: return false, pesan error tersimpan, data tetap ada', () async {
+      final repository = FakeConsumptionRepository(items: [indomieConsumption()])..failDelete = true;
+      final notifier = buildNotifier(repository);
+      await notifier.load();
+
+      final deleted = await notifier.delete('indomie-1');
+
+      expect(deleted, isFalse);
+      expect(notifier.state.deleteErrorMessage, AddConsumptionNotifier.deleteErrorText);
+      expect(notifier.state.isDeleting, isFalse);
+      expect(repository.items, hasLength(1));
+    });
+
+    test('hapus berhasil membersihkan pesan error sebelumnya', () async {
+      final repository = FakeConsumptionRepository(items: [indomieConsumption()])..failDelete = true;
+      final notifier = buildNotifier(repository);
+      await notifier.delete('indomie-1');
+
+      repository.failDelete = false;
+      final deleted = await notifier.delete('indomie-1');
+
+      expect(deleted, isTrue);
+      expect(notifier.state.deleteErrorMessage, isNull);
+      expect(repository.items, isEmpty);
+    });
+
+    test('clearDeleteError menghapus pesan setelah ditampilkan', () async {
+      final repository = FakeConsumptionRepository(items: [indomieConsumption()])..failDelete = true;
+      final notifier = buildNotifier(repository);
+      await notifier.delete('indomie-1');
+
+      notifier.clearDeleteError();
+
+      expect(notifier.state.deleteErrorMessage, isNull);
+    });
+
+    test('hapus ganda saat proses berjalan diabaikan', () async {
+      final gate = Completer<void>();
+      final repository = _GatedDeleteRepository(gate, items: [indomieConsumption()]);
+      final notifier = buildNotifier(repository);
+
+      final first = notifier.delete('indomie-1');
+      expect(notifier.state.deletingId, 'indomie-1');
+      final second = await notifier.delete('indomie-1');
+      gate.complete();
+
+      expect(second, isFalse);
+      expect(await first, isTrue);
+      expect(repository.deleteCalls, 1);
+    });
+  });
 }
 
 String notNumberMessageFor(ConsumptionUnit unit) => '${amountLabel(unit)} harus berupa angka.';
+
+class _GatedDeleteRepository extends FakeConsumptionRepository {
+  _GatedDeleteRepository(this.gate, {super.items});
+
+  final Completer<void> gate;
+  int deleteCalls = 0;
+
+  @override
+  Future<void> deleteConsumption(String id) async {
+    deleteCalls++;
+    await gate.future;
+    await super.deleteConsumption(id);
+  }
+}

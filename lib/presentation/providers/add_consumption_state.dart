@@ -9,6 +9,8 @@ class AddConsumptionState {
     this.loadErrorMessage,
     this.isSubmitting = false,
     this.submitErrorMessage,
+    this.deletingId,
+    this.deleteErrorMessage,
   });
 
   final LoadStatus loadStatus;
@@ -16,6 +18,10 @@ class AddConsumptionState {
   final String? loadErrorMessage;
   final bool isSubmitting;
   final String? submitErrorMessage;
+  final String? deletingId;
+  final String? deleteErrorMessage;
+
+  bool get isDeleting => deletingId != null;
 
   AddConsumptionState copyWith({
     LoadStatus? loadStatus,
@@ -23,8 +29,12 @@ class AddConsumptionState {
     String? loadErrorMessage,
     bool? isSubmitting,
     String? submitErrorMessage,
+    String? deletingId,
+    String? deleteErrorMessage,
     bool clearLoadError = false,
     bool clearSubmitError = false,
+    bool clearDeleting = false,
+    bool clearDeleteError = false,
   }) {
     return AddConsumptionState(
       loadStatus: loadStatus ?? this.loadStatus,
@@ -32,6 +42,8 @@ class AddConsumptionState {
       loadErrorMessage: clearLoadError ? null : loadErrorMessage ?? this.loadErrorMessage,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       submitErrorMessage: clearSubmitError ? null : submitErrorMessage ?? this.submitErrorMessage,
+      deletingId: clearDeleting ? null : deletingId ?? this.deletingId,
+      deleteErrorMessage: clearDeleteError ? null : deleteErrorMessage ?? this.deleteErrorMessage,
     );
   }
 }

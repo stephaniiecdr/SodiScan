@@ -305,7 +305,8 @@ Future<void> _confirmDelete(BuildContext context, FoodConsumption consumption) a
   if (confirmed != true) return;
 
   final deleted = await notifier.delete(consumption.id);
-  messenger.showSnackBar(
-    SnackBar(content: Text(deleted ? 'Konsumsi dihapus.' : AddConsumptionNotifier.deleteErrorText)),
-  );
+  final error = notifier.state.deleteErrorMessage;
+  if (!deleted && error == null) return;
+  messenger.showSnackBar(SnackBar(content: Text(deleted ? 'Konsumsi dihapus.' : error!)));
+  if (!deleted) notifier.clearDeleteError();
 }

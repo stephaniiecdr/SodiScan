@@ -63,14 +63,20 @@ class AddConsumptionNotifier extends StateNotifier<AddConsumptionState> {
 
   void clearSubmitError() => emit(state.copyWith(clearSubmitError: true));
 
+  void clearDeleteError() => emit(state.copyWith(clearDeleteError: true));
+
   Future<bool> delete(String id) async {
+    if (state.isDeleting) return false;
+    emit(state.copyWith(deletingId: id, clearDeleteError: true));
     try {
       await _deleteConsumption(id);
       AppLog.i(_tag, 'Hapus konsumsi $id berhasil');
     } on Exception catch (error) {
       AppLog.w(_tag, 'Hapus konsumsi $id gagal', error);
+      emit(state.copyWith(clearDeleting: true, deleteErrorMessage: deleteErrorText));
       return false;
     }
+    emit(state.copyWith(clearDeleting: true));
     await _fetchSummary();
     return true;
   }
