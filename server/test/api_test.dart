@@ -64,4 +64,35 @@ void main() {
     expect((await send('DELETE', '/api/consumptions/a1')).statusCode, 204);
     expect((await send('DELETE', '/api/consumptions/a1')).statusCode, 404);
   });
+
+  group('Issue #13 batas validasi server sama dengan aplikasi', () {
+    test('sodiumMg 10000 diterima, di atasnya ditolak 422', () async {
+      expect((await send('PUT', '/api/consumptions/a1', {...item, 'sodiumMg': 10000})).statusCode, 200);
+      expect((await send('PUT', '/api/consumptions/a1', {...item, 'sodiumMg': 10001})).statusCode, 422);
+      expect((await send('PUT', '/api/consumptions/a1', {...item, 'sodiumMg': 1e308})).statusCode, 422);
+    });
+
+    test('productName lebih dari 80 karakter ditolak 422', () async {
+      expect((await send('PUT', '/api/consumptions/a1', {...item, 'productName': 'a' * 80})).statusCode, 200);
+      expect((await send('PUT', '/api/consumptions/a1', {...item, 'productName': 'a' * 81})).statusCode, 422);
+    });
+
+    test('updatedAt opsional harus ISO 8601 jika diisi', () async {
+      final valid = {...item, 'updatedAt': '2026-10-02T08:00:00.000Z'};
+      expect((await send('PUT', '/api/consumptions/a1', valid)).statusCode, 200);
+      expect((await send('PUT', '/api/consumptions/a1', {...item, 'updatedAt': 'besok'})).statusCode, 422);
+      expect(await getAll(), [valid]);
+    });
+
+    test('pesan error 422 menjelaskan field yang salah', () async {
+      final response = await send('PUT', '/api/consumptions/a1', {...item, 'sodiumMg': 20000});
+      final body = jsonDecode(await response.readAsString()) as Map<String, dynamic>;
+
+      expect(body['error'], contains('maksimal'));
+    });
+
+    test('validateConsumption menerima data valid', () {
+      expect(validateConsumption(item, 'a1'), isNull);
+    });
+  });
 }

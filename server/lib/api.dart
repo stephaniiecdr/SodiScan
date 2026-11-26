@@ -12,6 +12,10 @@ const _corsHeaders = {
   'access-control-allow-headers': 'content-type',
 };
 
+/// Batas yang sama dengan validasi di aplikasi (lib/domain/validation/consumption_rules.dart).
+const num maxSodiumMg = 10000;
+const int maxProductNameLength = 80;
+
 Handler buildHandler(ConsumptionStore store) {
   final router = Router()
     ..get('/api/health', (Request request) => _json({'status': 'ok'}))
@@ -40,11 +44,17 @@ String? validateConsumption(Object? body, String id) {
   if (body['id'] != id) return 'Field id harus sama dengan id di URL.';
   final name = body['productName'];
   if (name is! String || name.trim().isEmpty) return 'productName wajib diisi.';
+  if (name.trim().length > maxProductNameLength) return 'productName maksimal $maxProductNameLength karakter.';
   final sodium = body['sodiumMg'];
   if (sodium is! num || !sodium.isFinite || sodium <= 0) return 'sodiumMg harus angka lebih dari 0.';
+  if (sodium > maxSodiumMg) return 'sodiumMg maksimal $maxSodiumMg mg per catatan.';
   if (body['source'] != 'scan' && body['source'] != 'manual') return 'source harus scan atau manual.';
   final consumedAt = body['consumedAt'];
   if (consumedAt is! String || DateTime.tryParse(consumedAt) == null) return 'consumedAt harus tanggal ISO 8601.';
+  final updatedAt = body['updatedAt'];
+  if (updatedAt != null && (updatedAt is! String || DateTime.tryParse(updatedAt) == null)) {
+    return 'updatedAt harus tanggal ISO 8601 atau null.';
+  }
   return null;
 }
 
