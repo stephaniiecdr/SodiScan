@@ -36,7 +36,11 @@ Handler buildHandler(ConsumptionStore store) {
       return deleted ? Response(204, headers: _corsHeaders) : _json({'error': 'Data tidak ditemukan.'}, status: 404);
     });
 
-  return const Pipeline().addMiddleware(logRequests()).addMiddleware(_cors()).addHandler(router.call);
+  return const Pipeline()
+      .addMiddleware(logRequests())
+      .addMiddleware(_cors())
+      .addMiddleware(_storeErrors())
+      .addHandler(router.call);
 }
 
 String? validateConsumption(Object? body, String id) {
@@ -66,5 +70,17 @@ Middleware _cors() {
   return (inner) => (request) {
         if (request.method == 'OPTIONS') return Response.ok(null, headers: _corsHeaders);
         return inner(request);
+      };
+}
+
+/// File data rusak dijawab 500 dengan pesan JSON, bukan membuat request crash tanpa penjelasan.
+Middleware _storeErrors() {
+  return (inner) => (request) async {
+        try {
+          return await inner(request);
+        } on StoreCorruptedException catch (error) {
+          print(error);
+          return _json({'error': 'Data di server rusak. Hubungi admin untuk memulihkan file data.'}, status: 500);
+        }
       };
 }

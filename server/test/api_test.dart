@@ -95,4 +95,53 @@ void main() {
       expect(validateConsumption(item, 'a1'), isNull);
     });
   });
+
+  group('Issue #14 file data rusak dan penulisan bersamaan', () {
+    test('file JSON rusak menghasilkan 500 dengan pesan, bukan crash', () async {
+      final file = File('${tempDir.path}/rusak.json')..writeAsStringSync('{bukan json');
+      handler = buildHandler(ConsumptionStore(file));
+
+      final response = await send('GET', '/api/consumptions');
+      final body = jsonDecode(await response.readAsString()) as Map<String, dynamic>;
+
+      expect(response.statusCode, 500);
+      expect(body['error'], contains('rusak'));
+    });
+
+    test('file berisi objek (bukan daftar) dianggap rusak', () async {
+      final store = ConsumptionStore(File('${tempDir.path}/objek.json')..writeAsStringSync('{"a": 1}'));
+
+      await expectLater(store.readAll(), throwsA(isA<StoreCorruptedException>()));
+    });
+
+    test('PUT ke file rusak tidak menimpa file (data lama bisa dipulihkan)', () async {
+      final file = File('${tempDir.path}/rusak.json')..writeAsStringSync('{bukan json');
+      handler = buildHandler(ConsumptionStore(file));
+
+      expect((await send('PUT', '/api/consumptions/a1', item)).statusCode, 500);
+      expect(file.readAsStringSync(), '{bukan json');
+    });
+
+    test('20 PUT bersamaan semuanya tersimpan (tidak ada lost update)', () async {
+      final requests = [
+        for (var i = 0; i < 20; i++) send('PUT', '/api/consumptions/id$i', {...item, 'id': 'id$i'}),
+      ];
+
+      final responses = await Future.wait(requests);
+
+      expect(responses.map((r) => r.statusCode), everyElement(200));
+      expect(await getAll(), hasLength(20));
+    });
+
+    test('PUT dan DELETE bersamaan diproses berurutan', () async {
+      await send('PUT', '/api/consumptions/a1', item);
+
+      await Future.wait([
+        send('DELETE', '/api/consumptions/a1'),
+        send('PUT', '/api/consumptions/b2', {...item, 'id': 'b2'}),
+      ]);
+
+      expect((await getAll()).map((e) => (e as Map)['id']), ['b2']);
+    });
+  });
 }
