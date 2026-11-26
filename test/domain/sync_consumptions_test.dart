@@ -32,9 +32,10 @@ void main() {
     final local = FakeConsumptionRepository(items: [indomieConsumption(), _item('roti', 'Roti', fixedNow)]);
     final server = FakeConsumptionSyncRepository(items: [indomieConsumption()]);
 
-    final count = await UploadConsumptions(local, server)();
+    final report = await UploadConsumptions(local, server)();
 
-    expect(count, 2);
+    expect(report.total, 2);
+    expect(report.hasFailures, isFalse);
     expect(server.items.map((item) => item.id), unorderedEquals(['indomie-1', 'roti']));
   });
 
@@ -50,6 +51,52 @@ void main() {
     expect(count, 2);
     expect(local.items, hasLength(2));
     expect(local.items.firstWhere((item) => item.id == 'indomie-1').sodiumMg, 820);
+  });
+
+  group('Issue #1 upload melanjutkan dan melaporkan catatan yang gagal', () {
+    test('satu catatan gagal tidak menghentikan catatan berikutnya', () async {
+      final local = FakeConsumptionRepository(items: [
+        _item('a', 'Roti', fixedNow),
+        _item('b', 'Sosis', fixedNow),
+        _item('c', 'Keju', fixedNow),
+      ]);
+      final server = FakeConsumptionSyncRepository()..failIds = {'b'};
+
+      final report = await UploadConsumptions(local, server)();
+
+      expect(server.uploadCalls, 3);
+      expect(server.items.map((item) => item.id), unorderedEquals(['a', 'c']));
+      expect(report.total, 3);
+      expect(report.successCount, 2);
+      expect(report.failed.single.productName, 'Sosis');
+    });
+
+    test('semua catatan gagal melempar error pertama agar penyebab terlihat', () async {
+      final local = FakeConsumptionRepository(items: [_item('a', 'Roti', fixedNow), _item('b', 'Sosis', fixedNow)]);
+      final server = FakeConsumptionSyncRepository()..failWith = const NetworkFailure('offline');
+
+      await expectLater(UploadConsumptions(local, server)(), throwsA(isA<NetworkFailure>()));
+      expect(server.uploadCalls, 2);
+    });
+
+    test('data lokal kosong menghasilkan laporan 0 tanpa error', () async {
+      final report = await UploadConsumptions(FakeConsumptionRepository(), FakeConsumptionSyncRepository())();
+
+      expect(report.total, 0);
+      expect(report.hasFailures, isFalse);
+    });
+
+    test('mengulang upload setelah server pulih mengirim catatan yang tadinya gagal', () async {
+      final local = FakeConsumptionRepository(items: [_item('a', 'Roti', fixedNow), _item('b', 'Sosis', fixedNow)]);
+      final server = FakeConsumptionSyncRepository()..failIds = {'b'};
+
+      await UploadConsumptions(local, server)();
+      server.failIds = {};
+      final retry = await UploadConsumptions(local, server)();
+
+      expect(retry.hasFailures, isFalse);
+      expect(server.items.map((item) => item.id), unorderedEquals(['a', 'b']));
+    });
   });
 
   test('RestoreConsumptions gagal tidak mengubah data lokal', () async {

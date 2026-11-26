@@ -1,5 +1,6 @@
 import '../../core/errors/failures.dart';
 import '../../core/logging/app_log.dart';
+import '../../domain/entities/sync_report.dart';
 import '../../domain/usecases/sync_consumptions.dart';
 import 'add_consumption_state.dart';
 import 'base_notifier.dart';
@@ -37,15 +38,27 @@ class ServerSyncNotifier extends StateNotifier<ServerSyncState> {
   Future<void> retry() => load();
 
   Future<String> upload() => _sync(SyncAction.upload, () async {
-        final count = await _uploadConsumptions();
+        final report = await _uploadConsumptions();
         await load();
-        return '$count catatan dikirim ke server.';
+        if (report.hasFailures) {
+          AppLog.w(_tag, 'Upload sebagian gagal: ${report.failed.map((item) => item.id).join(', ')}');
+        }
+        return uploadMessage(report);
       });
 
   Future<String> restore() => _sync(SyncAction.restore, () async {
         final count = await _restoreConsumptions();
         return '$count catatan dari server disimpan ke perangkat.';
       });
+
+  static String uploadMessage(UploadReport report) {
+    if (!report.hasFailures) return '${report.total} catatan dikirim ke server.';
+
+    final names = report.failed.map((item) => item.productName).take(3).join(', ');
+    final more = report.failed.length > 3 ? ', dan lainnya' : '';
+    return '${report.successCount} dari ${report.total} catatan dikirim. '
+        '${report.failed.length} gagal ($names$more). Tekan "Kirim ke Server" lagi untuk mengulang.';
+  }
 
   Future<String> _sync(SyncAction syncAction, Future<String> Function() action) async {
     if (state.isSyncing) return '';

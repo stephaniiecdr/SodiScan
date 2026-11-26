@@ -1,4 +1,5 @@
 import '../entities/food_consumption.dart';
+import '../entities/sync_report.dart';
 import '../repositories/consumption_repository.dart';
 import '../repositories/consumption_sync_repository.dart';
 
@@ -19,12 +20,24 @@ class UploadConsumptions {
   final ConsumptionRepository _localRepository;
   final ConsumptionSyncRepository _syncRepository;
 
-  Future<int> call() async {
+  /// Mengirim semua catatan lokal. Kegagalan satu catatan tidak menghentikan
+  /// catatan berikutnya. Jika semua gagal, error pertama dilempar ulang agar UI
+  /// dapat menampilkan penyebabnya (misalnya server mati).
+  Future<UploadReport> call() async {
     final items = await _localRepository.getAllConsumptions();
+    final failed = <FoodConsumption>[];
+    Exception? firstError;
+
     for (final item in items) {
-      await _syncRepository.uploadToServer(item);
+      try {
+        await _syncRepository.uploadToServer(item);
+      } on Exception catch (error) {
+        failed.add(item);
+        firstError ??= error;
+      }
     }
-    return items.length;
+    if (items.isNotEmpty && failed.length == items.length) throw firstError!;
+    return UploadReport(total: items.length, failed: failed);
   }
 }
 
