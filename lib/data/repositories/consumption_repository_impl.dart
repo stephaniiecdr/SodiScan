@@ -44,5 +44,9 @@ class ConsumptionRepositoryImpl implements ConsumptionRepository {
 
   Future<void> _write(FoodConsumption consumption) => _localDataSource.save(FoodConsumptionModel.fromEntity(consumption));
 
-  bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+  bool _isSameDay(DateTime a, DateTime b) {
+    final x = a.toLocal();
+    final y = b.toLocal();
+    return x.year == y.year && x.month == y.month && x.day == y.day;
+  }
 }

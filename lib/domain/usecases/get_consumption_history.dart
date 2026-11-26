@@ -11,7 +11,8 @@ class GetConsumptionHistory {
     final consumptions = await _repository.getAllConsumptions();
     final byDate = <DateTime, List<FoodConsumption>>{};
     for (final item in consumptions) {
-      final day = DateTime(item.consumedAt.year, item.consumedAt.month, item.consumedAt.day);
+      final local = item.consumedAt.toLocal();
+      final day = DateTime(local.year, local.month, local.day);
       byDate.putIfAbsent(day, () => []).add(item);
     }
 

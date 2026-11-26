@@ -23,6 +23,7 @@ class FoodConsumptionModel {
     );
   }
 
+  /// Membaca data dari Hive. Tanggal selalu dikonversi ke zona waktu perangkat.
   factory FoodConsumptionModel.fromMap(Map<dynamic, dynamic> map) {
     final updatedAt = map['updatedAt'];
     return FoodConsumptionModel(
@@ -31,11 +32,13 @@ class FoodConsumptionModel {
       productName: map['productName'] as String,
       sodiumMg: (map['sodiumMg'] as num).toDouble(),
       source: map['source'] as String,
-      consumedAt: DateTime.parse(map['consumedAt'] as String),
-      updatedAt: updatedAt is String ? DateTime.parse(updatedAt) : null,
+      consumedAt: DateTime.parse(map['consumedAt'] as String).toLocal(),
+      updatedAt: updatedAt is String ? DateTime.parse(updatedAt).toLocal() : null,
     );
   }
 
+  /// Membaca data dari server. Nilai ISO 8601 ber-offset (mis. akhiran `Z`)
+  /// dikonversi ke waktu lokal agar pengelompokan harian sesuai zona waktu pengguna.
   factory FoodConsumptionModel.fromJson(Object? json) {
     if (json is! Map<String, dynamic>) throw const FormatException('Item konsumsi harus berupa objek JSON.');
 
@@ -44,7 +47,7 @@ class FoodConsumptionModel {
     final productName = json['productName'];
     final sodiumMg = json['sodiumMg'];
     final source = json['source'];
-    final consumedAt = json['consumedAt'] is String ? DateTime.tryParse(json['consumedAt'] as String) : null;
+    final consumedAt = _parseDate(json['consumedAt']);
     final rawUpdatedAt = json['updatedAt'];
     final updatedAt = _parseDate(rawUpdatedAt);
 
@@ -83,7 +86,7 @@ class FoodConsumptionModel {
   final DateTime consumedAt;
   final DateTime? updatedAt;
 
-  static DateTime? _parseDate(Object? value) => value is String ? DateTime.tryParse(value) : null;
+  static DateTime? _parseDate(Object? value) => value is String ? DateTime.tryParse(value)?.toLocal() : null;
 
   Map<String, dynamic> toMap() {
     return {
@@ -97,7 +100,14 @@ class FoodConsumptionModel {
     };
   }
 
-  Map<String, dynamic> toJson() => toMap();
+  /// Dikirim ke server dalam UTC (akhiran `Z`) agar tidak ambigu antar zona waktu.
+  Map<String, dynamic> toJson() {
+    return {
+      ...toMap(),
+      'consumedAt': consumedAt.toUtc().toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt!.toUtc().toIso8601String(),
+    };
+  }
 
   FoodConsumption toEntity() {
     return FoodConsumption(

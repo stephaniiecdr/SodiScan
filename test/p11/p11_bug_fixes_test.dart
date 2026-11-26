@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sodiscan/core/errors/failures.dart';
+import 'package:sodiscan/data/models/food_consumption_model.dart';
 import 'package:sodiscan/domain/entities/food_consumption.dart';
 import 'package:sodiscan/domain/entities/product.dart';
 import 'package:sodiscan/domain/entities/sync_report.dart';
 import 'package:sodiscan/domain/usecases/delete_consumption.dart';
+import 'package:sodiscan/domain/usecases/get_consumption_history.dart';
 import 'package:sodiscan/domain/usecases/get_daily_summary.dart';
 import 'package:sodiscan/domain/usecases/get_product_by_barcode.dart';
 import 'package:sodiscan/domain/usecases/record_consumption.dart';
@@ -209,6 +211,39 @@ void main() {
       expect(second, isFalse);
       expect(await first, isTrue);
       expect(repository.deleteCalls, 1);
+    });
+  });
+
+  group('Issue #5 riwayat dikelompokkan menurut zona waktu lokal', () {
+    test('data UTC dikelompokkan ke tanggal lokal yang sama dengan waktunya', () async {
+      final utcTime = DateTime.utc(2026, 10, 1, 23, 30);
+      final repository = FakeConsumptionRepository(items: [
+        FoodConsumption(
+          id: 'utc',
+          productName: 'Bakso',
+          sodiumMg: 800,
+          source: ConsumptionSource.manual,
+          consumedAt: utcTime,
+        ),
+      ]);
+
+      final days = await GetConsumptionHistory(repository)();
+      final local = utcTime.toLocal();
+
+      expect(days.single.date, DateTime(local.year, local.month, local.day));
+    });
+
+    test('data dari server dengan akhiran Z disimpan sebagai waktu lokal', () {
+      final model = FoodConsumptionModel.fromJson({
+        'id': 'x',
+        'productName': 'Bakso',
+        'sodiumMg': 800,
+        'source': 'manual',
+        'consumedAt': '2026-10-01T23:30:00.000Z',
+      });
+
+      expect(model.consumedAt.isUtc, isFalse);
+      expect(model.toEntity().consumedAt, DateTime.utc(2026, 10, 1, 23, 30).toLocal());
     });
   });
 }

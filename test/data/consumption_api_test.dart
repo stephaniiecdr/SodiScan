@@ -20,7 +20,7 @@ void main() {
     'productName': 'Indomie Mi Goreng',
     'sodiumMg': 750,
     'source': 'scan',
-    'consumedAt': '2026-10-01T10:30:00.000',
+    'consumedAt': '2026-10-01T10:30:00.000Z',
   };
 
   late List<http.Request> requests;
@@ -46,7 +46,7 @@ void main() {
       expect(entity.productName, 'Indomie Mi Goreng');
       expect(entity.sodiumMg, 750);
       expect(entity.source, ConsumptionSource.scan);
-      expect(entity.consumedAt, DateTime(2026, 10, 1, 10, 30));
+      expect(entity.consumedAt, DateTime.utc(2026, 10, 1, 10, 30).toLocal());
       expect(model.toJson(), validJson);
     });
 
@@ -130,7 +130,27 @@ void main() {
     });
   });
 
-  group('Issue #2 updatedAt', () {
+  group('Issue #5 zona waktu dan Issue #2 updatedAt', () {
+    test('consumedAt ber-offset Z dikonversi ke waktu lokal perangkat', () {
+      final model = FoodConsumptionModel.fromJson(validJson);
+
+      expect(model.consumedAt.isUtc, isFalse);
+      expect(model.consumedAt, DateTime.utc(2026, 10, 1, 10, 30).toLocal());
+    });
+
+    test('consumedAt dengan offset +07:00 menunjuk instan yang sama dengan UTC', () {
+      final model = FoodConsumptionModel.fromJson({...validJson, 'consumedAt': '2026-10-01T17:30:00.000+07:00'});
+
+      expect(model.consumedAt.toUtc(), DateTime.utc(2026, 10, 1, 10, 30));
+    });
+
+    test('toJson mengirim tanggal dalam UTC berakhiran Z', () {
+      final model = FoodConsumptionModel.fromEntity(indomieConsumption());
+
+      expect(model.toJson()['consumedAt'], endsWith('Z'));
+      expect(DateTime.parse(model.toJson()['consumedAt'] as String), indomieConsumption().consumedAt.toUtc());
+    });
+
     test('updatedAt opsional: tidak ada di JSON berarti null', () {
       final model = FoodConsumptionModel.fromJson(validJson);
 
@@ -143,7 +163,7 @@ void main() {
 
       final entity = FoodConsumptionModel.fromJson(json).toEntity();
 
-      expect(entity.updatedAt, DateTime.utc(2026, 10, 2, 8));
+      expect(entity.updatedAt, DateTime.utc(2026, 10, 2, 8).toLocal());
       expect(entity.lastModifiedAt, entity.updatedAt);
       expect(FoodConsumptionModel.fromEntity(entity).toJson()['updatedAt'], '2026-10-02T08:00:00.000Z');
     });
