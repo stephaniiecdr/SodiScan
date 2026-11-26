@@ -24,4 +24,9 @@ class ConsumptionSyncRepositoryImpl implements ConsumptionSyncRepository {
       () => _remoteDataSource.upsert(FoodConsumptionModel.fromEntity(consumption)),
     );
   }
+
+  @override
+  Future<void> deleteFromServer(String id) {
+    return guardRemote('menghapus data di server', () => _remoteDataSource.delete(id));
+  }
 }

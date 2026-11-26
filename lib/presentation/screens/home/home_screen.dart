@@ -5,6 +5,7 @@ import '../../../core/utils/date_format.dart';
 import '../../../core/utils/sodium_format.dart';
 import '../../../domain/entities/daily_nutrition.dart';
 import '../../../domain/entities/food_consumption.dart';
+import '../../../domain/entities/frequent_food.dart';
 import '../../providers/add_consumption_notifier.dart';
 import '../../providers/add_consumption_state.dart';
 import '../../widgets/adaptive_layout.dart';
@@ -45,7 +46,7 @@ class HomeScreen extends StatelessWidget {
             key: const Key('openSettingsButton'),
             tooltip: 'Pengaturan',
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Navigator.of(context).push(SettingsScreen.route(context)),
+            onPressed: () => _openSettings(context),
           ),
         ],
       ),
@@ -80,6 +81,10 @@ class _HomeContent extends StatelessWidget {
       _DailySummaryCard(summary: state.summary!),
       const SizedBox(height: 16),
       const _ActionButtons(),
+      if (state.frequentFoods.isNotEmpty) ...[
+        const SizedBox(height: 16),
+        _QuickAddSection(foods: state.frequentFoods, isSubmitting: state.isSubmitting),
+      ],
     ];
     final today = [
       Semantics(header: true, child: Text('Konsumsi Hari Ini', style: Theme.of(context).textTheme.titleMedium)),
@@ -263,6 +268,59 @@ class _ActionButtons extends StatelessWidget {
   }
 }
 
+class _QuickAddSection extends StatelessWidget {
+  const _QuickAddSection({required this.foods, required this.isSubmitting});
+
+  final List<FrequentFood> foods;
+  final bool isSubmitting;
+
+  Future<void> _add(BuildContext context, FrequentFood food) async {
+    final notifier = context.read<AddConsumptionNotifier>();
+    final messenger = ScaffoldMessenger.of(context);
+    final saved = await notifier.quickAdd(food);
+    final message = saved ? AddConsumptionNotifier.quickAddSuccessText(food) : notifier.state.submitErrorMessage;
+    if (message == null) return;
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+    if (!saved) notifier.clearSubmitError();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      key: const Key('quickAddSection'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(header: true, child: Text('Catat Cepat', style: Theme.of(context).textTheme.titleMedium)),
+        const SizedBox(height: 4),
+        Text('Ketuk makanan yang sering dimakan untuk mencatatnya lagi.', style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (var i = 0; i < foods.length; i++)
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 280),
+                child: ActionChip(
+                  key: Key('quickAdd_$i'),
+                  avatar: const Icon(Icons.add, size: 18),
+                  tooltip: 'Catat lagi ${foods[i].productName}, ${formatSodiumMg(foods[i].sodiumMg)}',
+                  label: Text(
+                    '${foods[i].productName} · ${formatSodiumMg(foods[i].sodiumMg)}',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onPressed: isSubmitting ? null : () => _add(context, foods[i]),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 Future<void> _openProductLookup(BuildContext context) async {
   final notifier = context.read<AddConsumptionNotifier>();
   final navigator = Navigator.of(context);
@@ -280,6 +338,13 @@ Future<void> _openProductLookup(BuildContext context) async {
   } else if (saved == false) {
     await navigator.push(AddConsumptionScreen.route());
   }
+}
+
+/// Target natrium bisa diubah di Pengaturan, jadi ringkasan dihitung ulang setelah kembali.
+Future<void> _openSettings(BuildContext context) async {
+  final notifier = context.read<AddConsumptionNotifier>();
+  await Navigator.of(context).push(SettingsScreen.route(context));
+  await notifier.refresh();
 }
 
 Future<void> _openManualInput(BuildContext context) => Navigator.of(context).push(AddConsumptionScreen.route());
@@ -305,7 +370,8 @@ Future<void> _confirmDelete(BuildContext context, FoodConsumption consumption) a
   if (confirmed != true) return;
 
   final deleted = await notifier.delete(consumption.id);
-  messenger.showSnackBar(
-    SnackBar(content: Text(deleted ? 'Konsumsi dihapus.' : AddConsumptionNotifier.deleteErrorText)),
-  );
+  final error = notifier.state.deleteErrorMessage;
+  if (!deleted && error == null) return;
+  messenger.showSnackBar(SnackBar(content: Text(deleted ? 'Konsumsi dihapus.' : error!)));
+  if (!deleted) notifier.clearDeleteError();
 }

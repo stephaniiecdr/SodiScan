@@ -40,9 +40,23 @@ class ConsumptionRepositoryImpl implements ConsumptionRepository {
     return guardStorage('menghapus data konsumsi', () => _localDataSource.delete(id));
   }
 
+  @override
+  Future<Set<String>> getDeletedIds() {
+    return guardStorage('membaca daftar data terhapus', () async => _localDataSource.deletedIds());
+  }
+
+  @override
+  Future<void> forgetDeleted(String id) {
+    return guardStorage('memperbarui daftar data terhapus', () => _localDataSource.forgetDeleted(id));
+  }
+
   Iterable<FoodConsumption> _readAll() => _localDataSource.getAll().map((model) => model.toEntity());
 
   Future<void> _write(FoodConsumption consumption) => _localDataSource.save(FoodConsumptionModel.fromEntity(consumption));
 
-  bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+  bool _isSameDay(DateTime a, DateTime b) {
+    final x = a.toLocal();
+    final y = b.toLocal();
+    return x.year == y.year && x.month == y.month && x.day == y.day;
+  }
 }

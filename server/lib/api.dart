@@ -12,6 +12,10 @@ const _corsHeaders = {
   'access-control-allow-headers': 'content-type',
 };
 
+/// Batas yang sama dengan validasi di aplikasi (lib/domain/validation/consumption_rules.dart).
+const num maxSodiumMg = 10000;
+const int maxProductNameLength = 80;
+
 Handler buildHandler(ConsumptionStore store) {
   final router = Router()
     ..get('/api/health', (Request request) => _json({'status': 'ok'}))
@@ -32,7 +36,11 @@ Handler buildHandler(ConsumptionStore store) {
       return deleted ? Response(204, headers: _corsHeaders) : _json({'error': 'Data tidak ditemukan.'}, status: 404);
     });
 
-  return const Pipeline().addMiddleware(logRequests()).addMiddleware(_cors()).addHandler(router.call);
+  return const Pipeline()
+      .addMiddleware(logRequests())
+      .addMiddleware(_cors())
+      .addMiddleware(_storeErrors())
+      .addHandler(router.call);
 }
 
 String? validateConsumption(Object? body, String id) {
@@ -40,11 +48,17 @@ String? validateConsumption(Object? body, String id) {
   if (body['id'] != id) return 'Field id harus sama dengan id di URL.';
   final name = body['productName'];
   if (name is! String || name.trim().isEmpty) return 'productName wajib diisi.';
+  if (name.trim().length > maxProductNameLength) return 'productName maksimal $maxProductNameLength karakter.';
   final sodium = body['sodiumMg'];
   if (sodium is! num || !sodium.isFinite || sodium <= 0) return 'sodiumMg harus angka lebih dari 0.';
+  if (sodium > maxSodiumMg) return 'sodiumMg maksimal $maxSodiumMg mg per catatan.';
   if (body['source'] != 'scan' && body['source'] != 'manual') return 'source harus scan atau manual.';
   final consumedAt = body['consumedAt'];
   if (consumedAt is! String || DateTime.tryParse(consumedAt) == null) return 'consumedAt harus tanggal ISO 8601.';
+  final updatedAt = body['updatedAt'];
+  if (updatedAt != null && (updatedAt is! String || DateTime.tryParse(updatedAt) == null)) {
+    return 'updatedAt harus tanggal ISO 8601 atau null.';
+  }
   return null;
 }
 
@@ -56,5 +70,17 @@ Middleware _cors() {
   return (inner) => (request) {
         if (request.method == 'OPTIONS') return Response.ok(null, headers: _corsHeaders);
         return inner(request);
+      };
+}
+
+/// File data rusak dijawab 500 dengan pesan JSON, bukan membuat request crash tanpa penjelasan.
+Middleware _storeErrors() {
+  return (inner) => (request) async {
+        try {
+          return await inner(request);
+        } on StoreCorruptedException catch (error) {
+          print(error);
+          return _json({'error': 'Data di server rusak. Hubungi admin untuk memulihkan file data.'}, status: 500);
+        }
       };
 }

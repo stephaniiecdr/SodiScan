@@ -8,6 +8,7 @@ class FoodConsumptionModel {
     required this.sodiumMg,
     required this.source,
     required this.consumedAt,
+    this.updatedAt,
   });
 
   factory FoodConsumptionModel.fromEntity(FoodConsumption entity) {
@@ -18,20 +19,26 @@ class FoodConsumptionModel {
       sodiumMg: entity.sodiumMg,
       source: entity.source.name,
       consumedAt: entity.consumedAt,
+      updatedAt: entity.updatedAt,
     );
   }
 
+  /// Membaca data dari Hive. Tanggal selalu dikonversi ke zona waktu perangkat.
   factory FoodConsumptionModel.fromMap(Map<dynamic, dynamic> map) {
+    final updatedAt = map['updatedAt'];
     return FoodConsumptionModel(
       id: map['id'] as String,
       barcode: map['barcode'] as String?,
       productName: map['productName'] as String,
       sodiumMg: (map['sodiumMg'] as num).toDouble(),
       source: map['source'] as String,
-      consumedAt: DateTime.parse(map['consumedAt'] as String),
+      consumedAt: DateTime.parse(map['consumedAt'] as String).toLocal(),
+      updatedAt: updatedAt is String ? DateTime.parse(updatedAt).toLocal() : null,
     );
   }
 
+  /// Membaca data dari server. Nilai ISO 8601 ber-offset (mis. akhiran `Z`)
+  /// dikonversi ke waktu lokal agar pengelompokan harian sesuai zona waktu pengguna.
   factory FoodConsumptionModel.fromJson(Object? json) {
     if (json is! Map<String, dynamic>) throw const FormatException('Item konsumsi harus berupa objek JSON.');
 
@@ -40,7 +47,9 @@ class FoodConsumptionModel {
     final productName = json['productName'];
     final sodiumMg = json['sodiumMg'];
     final source = json['source'];
-    final consumedAt = json['consumedAt'] is String ? DateTime.tryParse(json['consumedAt'] as String) : null;
+    final consumedAt = _parseDate(json['consumedAt']);
+    final rawUpdatedAt = json['updatedAt'];
+    final updatedAt = _parseDate(rawUpdatedAt);
 
     if (id is! String || id.isEmpty) throw const FormatException('Field id wajib berupa teks.');
     if (barcode != null && barcode is! String) throw const FormatException('Field barcode harus teks atau null.');
@@ -54,6 +63,9 @@ class FoodConsumptionModel {
       throw const FormatException('Field source harus scan atau manual.');
     }
     if (consumedAt == null) throw const FormatException('Field consumedAt harus tanggal ISO 8601.');
+    if (rawUpdatedAt != null && updatedAt == null) {
+      throw const FormatException('Field updatedAt harus tanggal ISO 8601 atau null.');
+    }
 
     return FoodConsumptionModel(
       id: id,
@@ -62,6 +74,7 @@ class FoodConsumptionModel {
       sodiumMg: sodiumMg.toDouble(),
       source: source as String,
       consumedAt: consumedAt,
+      updatedAt: updatedAt,
     );
   }
 
@@ -71,6 +84,9 @@ class FoodConsumptionModel {
   final double sodiumMg;
   final String source;
   final DateTime consumedAt;
+  final DateTime? updatedAt;
+
+  static DateTime? _parseDate(Object? value) => value is String ? DateTime.tryParse(value)?.toLocal() : null;
 
   Map<String, dynamic> toMap() {
     return {
@@ -80,10 +96,18 @@ class FoodConsumptionModel {
       'sodiumMg': sodiumMg,
       'source': source,
       'consumedAt': consumedAt.toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
     };
   }
 
-  Map<String, dynamic> toJson() => toMap();
+  /// Dikirim ke server dalam UTC (akhiran `Z`) agar tidak ambigu antar zona waktu.
+  Map<String, dynamic> toJson() {
+    return {
+      ...toMap(),
+      'consumedAt': consumedAt.toUtc().toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt!.toUtc().toIso8601String(),
+    };
+  }
 
   FoodConsumption toEntity() {
     return FoodConsumption(
@@ -96,6 +120,7 @@ class FoodConsumptionModel {
         orElse: () => ConsumptionSource.manual,
       ),
       consumedAt: consumedAt,
+      updatedAt: updatedAt,
     );
   }
 }

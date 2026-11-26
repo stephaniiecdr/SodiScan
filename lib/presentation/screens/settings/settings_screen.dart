@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/utils/sodium_format.dart';
 import '../../../domain/repositories/settings_repository.dart';
 import '../../../domain/services/device_authenticator.dart';
 import '../../../domain/services/notification_service.dart';
@@ -8,6 +9,7 @@ import '../../providers/settings_notifier.dart';
 import '../../widgets/adaptive_layout.dart';
 import '../logs/log_screen.dart';
 import '../../widgets/state_message.dart';
+import 'daily_limit_dialog.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -34,6 +36,13 @@ class SettingsScreen extends StatelessWidget {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  Future<void> _editDailyLimit(BuildContext context, int current) async {
+    final notifier = context.read<SettingsNotifier>();
+    final value = await showDailyLimitDialog(context, current: current);
+    if (value == null || !context.mounted) return;
+    await _run(context, () => notifier.setDailyLimit(value));
+  }
+
   @override
   Widget build(BuildContext context) {
     final notifier = context.watch<SettingsNotifier>();
@@ -58,6 +67,19 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     if (notifier.isBusy)
                       const LinearProgressIndicator(key: Key('settingsBusy'), semanticsLabel: 'Menyimpan pengaturan'),
+                    ListTile(
+                      key: const Key('dailyLimitTile'),
+                      leading: const Icon(Icons.flag_outlined),
+                      title: const Text('Target Natrium Harian'),
+                      subtitle: Text(
+                        '${formatSodiumMg(settings.dailyLimitMg.toDouble())} per hari. '
+                        'Status Mendekati Batas dan Bahaya mengikuti target ini.',
+                      ),
+                      trailing: const Icon(Icons.edit_outlined),
+                      enabled: !notifier.isBusy,
+                      onTap: () => _editDailyLimit(context, settings.dailyLimitMg),
+                    ),
+                    const Divider(height: 1),
                     SwitchListTile(
                       key: const Key('sodiumAlertSwitch'),
                       secondary: const Icon(Icons.notifications_active_outlined),

@@ -32,9 +32,10 @@ void main() {
     final local = FakeConsumptionRepository(items: [indomieConsumption(), _item('roti', 'Roti', fixedNow)]);
     final server = FakeConsumptionSyncRepository(items: [indomieConsumption()]);
 
-    final count = await UploadConsumptions(local, server)();
+    final report = await UploadConsumptions(local, server)();
 
-    expect(count, 2);
+    expect(report.total, 2);
+    expect(report.hasFailures, isFalse);
     expect(server.items.map((item) => item.id), unorderedEquals(['indomie-1', 'roti']));
   });
 
@@ -45,11 +46,106 @@ void main() {
       _item('roti', 'Roti', fixedNow),
     ]);
 
-    final count = await RestoreConsumptions(server, local)();
+    final report = await RestoreConsumptions(server, local)();
 
-    expect(count, 2);
+    expect(report.savedCount, 2);
+    expect(report.added, 1);
+    expect(report.updated, 1);
     expect(local.items, hasLength(2));
     expect(local.items.firstWhere((item) => item.id == 'indomie-1').sodiumMg, 820);
+  });
+
+  group('Issue #1 upload melanjutkan dan melaporkan catatan yang gagal', () {
+    test('satu catatan gagal tidak menghentikan catatan berikutnya', () async {
+      final local = FakeConsumptionRepository(items: [
+        _item('a', 'Roti', fixedNow),
+        _item('b', 'Sosis', fixedNow),
+        _item('c', 'Keju', fixedNow),
+      ]);
+      final server = FakeConsumptionSyncRepository()..failIds = {'b'};
+
+      final report = await UploadConsumptions(local, server)();
+
+      expect(server.uploadCalls, 3);
+      expect(server.items.map((item) => item.id), unorderedEquals(['a', 'c']));
+      expect(report.total, 3);
+      expect(report.successCount, 2);
+      expect(report.failed.single.productName, 'Sosis');
+    });
+
+    test('semua catatan gagal melempar error pertama agar penyebab terlihat', () async {
+      final local = FakeConsumptionRepository(items: [_item('a', 'Roti', fixedNow), _item('b', 'Sosis', fixedNow)]);
+      final server = FakeConsumptionSyncRepository()..failWith = const NetworkFailure('offline');
+
+      await expectLater(UploadConsumptions(local, server)(), throwsA(isA<NetworkFailure>()));
+      expect(server.uploadCalls, 2);
+    });
+
+    test('data lokal kosong menghasilkan laporan 0 tanpa error', () async {
+      final report = await UploadConsumptions(FakeConsumptionRepository(), FakeConsumptionSyncRepository())();
+
+      expect(report.total, 0);
+      expect(report.hasFailures, isFalse);
+    });
+
+    test('mengulang upload setelah server pulih mengirim catatan yang tadinya gagal', () async {
+      final local = FakeConsumptionRepository(items: [_item('a', 'Roti', fixedNow), _item('b', 'Sosis', fixedNow)]);
+      final server = FakeConsumptionSyncRepository()..failIds = {'b'};
+
+      await UploadConsumptions(local, server)();
+      server.failIds = {};
+      final retry = await UploadConsumptions(local, server)();
+
+      expect(retry.hasFailures, isFalse);
+      expect(server.items.map((item) => item.id), unorderedEquals(['a', 'b']));
+    });
+  });
+
+  group('Issue #2 restore memakai kebijakan last-modified-wins', () {
+    test('catatan lokal yang diedit lebih baru tidak ditimpa versi server', () async {
+      final editedLocal = indomieConsumption().copyWith(sodiumMg: 600, updatedAt: fixedNow);
+      final local = FakeConsumptionRepository(items: [editedLocal]);
+      final server = FakeConsumptionSyncRepository(items: [indomieConsumption()]);
+
+      final report = await RestoreConsumptions(server, local)();
+
+      expect(report.keptLocal, 1);
+      expect(report.savedCount, 0);
+      expect(local.items.single.sodiumMg, 600);
+      expect(local.updateCalls, 0);
+    });
+
+    test('versi server yang lebih baru menimpa catatan lokal', () async {
+      final local = FakeConsumptionRepository(items: [indomieConsumption()]);
+      final server = FakeConsumptionSyncRepository(items: [
+        indomieConsumption().copyWith(sodiumMg: 900, updatedAt: fixedNow),
+      ]);
+
+      final report = await RestoreConsumptions(server, local)();
+
+      expect(report.updated, 1);
+      expect(local.items.single.sodiumMg, 900);
+    });
+
+    test('waktu ubah sama: versi server dipakai agar perangkat konsisten dengan server', () async {
+      final local = FakeConsumptionRepository(items: [indomieConsumption().copyWith(updatedAt: fixedNow)]);
+      final server = FakeConsumptionSyncRepository(items: [
+        indomieConsumption().copyWith(sodiumMg: 700, updatedAt: fixedNow),
+      ]);
+
+      final report = await RestoreConsumptions(server, local)();
+
+      expect(report.updated, 1);
+      expect(local.items.single.sodiumMg, 700);
+    });
+
+    test('lastModifiedAt memakai consumedAt jika belum pernah diubah', () {
+      final item = indomieConsumption();
+
+      expect(item.updatedAt, isNull);
+      expect(item.lastModifiedAt, item.consumedAt);
+      expect(item.copyWith(updatedAt: fixedNow).lastModifiedAt, fixedNow);
+    });
   });
 
   test('RestoreConsumptions gagal tidak mengubah data lokal', () async {

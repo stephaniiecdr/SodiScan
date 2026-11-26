@@ -11,15 +11,19 @@ class DailyNutrition {
     required this.consumptions,
   });
 
-  factory DailyNutrition.fromConsumptions(DateTime date, List<FoodConsumption> consumptions) {
+  factory DailyNutrition.fromConsumptions(
+    DateTime date,
+    List<FoodConsumption> consumptions, {
+    double dailyLimitMg = dailySodiumLimitMg,
+  }) {
     final sorted = [...consumptions]..sort((a, b) => b.consumedAt.compareTo(a.consumedAt));
     final total = sorted.fold<double>(0, (sum, item) => sum + item.sodiumMg);
 
     return DailyNutrition(
       date: DateTime(date.year, date.month, date.day),
       totalSodiumMg: total,
-      dailyLimitMg: dailySodiumLimitMg,
-      riskStatus: RiskStatus.fromTotal(total),
+      dailyLimitMg: dailyLimitMg,
+      riskStatus: RiskStatus.fromTotal(total, limitMg: dailyLimitMg),
       consumptions: sorted,
     );
   }

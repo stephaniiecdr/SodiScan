@@ -5,9 +5,9 @@ enum RiskStatus {
   nearLimit,
   danger;
 
-  static RiskStatus fromTotal(double totalSodiumMg) {
-    if (totalSodiumMg <= nearLimitThresholdMg) return RiskStatus.safe;
-    if (totalSodiumMg <= dailySodiumLimitMg) return RiskStatus.nearLimit;
+  static RiskStatus fromTotal(double totalSodiumMg, {double limitMg = dailySodiumLimitMg}) {
+    if (totalSodiumMg <= limitMg * nearLimitRatio) return RiskStatus.safe;
+    if (totalSodiumMg <= limitMg) return RiskStatus.nearLimit;
     return RiskStatus.danger;
   }
 }

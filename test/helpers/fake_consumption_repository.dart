@@ -61,7 +61,16 @@ class FakeConsumptionRepository implements ConsumptionRepository {
   Future<void> deleteConsumption(String id) async {
     if (failDelete) throw const StorageFailure('delete failed');
     items.removeWhere((item) => item.id == id);
+    deletedIds.add(id);
   }
+
+  final Set<String> deletedIds = {};
+
+  @override
+  Future<Set<String>> getDeletedIds() async => Set.of(deletedIds);
+
+  @override
+  Future<void> forgetDeleted(String id) async => deletedIds.remove(id);
 }
 
 final DateTime fixedNow = DateTime(2026, 10, 1, 12, 30);

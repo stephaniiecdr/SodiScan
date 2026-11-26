@@ -45,6 +45,13 @@ class ConsumptionRemoteDataSource {
     _ensureSuccess(response);
   }
 
+  /// 404 berarti catatan sudah tidak ada di server, sehingga dianggap berhasil.
+  Future<void> delete(String id) async {
+    final response = await _client.delete(_uri('/${Uri.encodeComponent(id)}')).timeout(timeout);
+    if (response.statusCode == 404) return;
+    _ensureSuccess(response);
+  }
+
   void _ensureSuccess(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) return;
     throw ApiException(response.statusCode, 'Server merespons ${response.statusCode}');

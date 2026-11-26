@@ -1,8 +1,11 @@
 import '../../core/logging/app_log.dart';
+import '../../core/utils/sodium_format.dart';
 import '../../domain/entities/daily_nutrition.dart';
 import '../../domain/entities/food_consumption.dart';
+import '../../domain/entities/frequent_food.dart';
 import '../../domain/usecases/delete_consumption.dart';
 import '../../domain/usecases/get_daily_summary.dart';
+import '../../domain/usecases/get_frequent_foods.dart';
 import '../../domain/usecases/record_consumption.dart';
 import '../../domain/usecases/send_sodium_alert.dart';
 import '../../domain/usecases/update_consumption.dart';
@@ -16,8 +19,10 @@ class AddConsumptionNotifier extends StateNotifier<AddConsumptionState> {
     required UpdateConsumption updateConsumption,
     required DeleteConsumption deleteConsumption,
     SendSodiumAlert? sendSodiumAlert,
+    GetFrequentFoods? getFrequentFoods,
     DateTime Function()? clock,
-  })  : _getDailySummary = getDailySummary,
+  })  : _getFrequentFoods = getFrequentFoods,
+        _getDailySummary = getDailySummary,
         _recordConsumption = recordConsumption,
         _updateConsumption = updateConsumption,
         _deleteConsumption = deleteConsumption,
@@ -36,7 +41,24 @@ class AddConsumptionNotifier extends StateNotifier<AddConsumptionState> {
   final UpdateConsumption _updateConsumption;
   final DeleteConsumption _deleteConsumption;
   final SendSodiumAlert? _sendSodiumAlert;
+  final GetFrequentFoods? _getFrequentFoods;
   final DateTime Function() _clock;
+
+  static String quickAddSuccessText(FrequentFood food) =>
+      '${food.productName} dicatat lagi (${formatSodiumMg(food.sodiumMg)}).';
+
+  /// Fitur #17: mencatat ulang makanan yang sering dimakan dengan sekali tekan.
+  Future<bool> quickAdd(FrequentFood food) {
+    return _write(
+      () => _recordConsumption(
+        productName: food.productName,
+        sodiumMg: food.sodiumMg,
+        source: food.source,
+        barcode: food.barcode,
+      ),
+      errorText: submitErrorText,
+    );
+  }
 
   Future<void> load() async {
     emit(state.copyWith(loadStatus: LoadStatus.loading, clearLoadError: true));
@@ -63,14 +85,20 @@ class AddConsumptionNotifier extends StateNotifier<AddConsumptionState> {
 
   void clearSubmitError() => emit(state.copyWith(clearSubmitError: true));
 
+  void clearDeleteError() => emit(state.copyWith(clearDeleteError: true));
+
   Future<bool> delete(String id) async {
+    if (state.isDeleting) return false;
+    emit(state.copyWith(deletingId: id, clearDeleteError: true));
     try {
       await _deleteConsumption(id);
       AppLog.i(_tag, 'Hapus konsumsi $id berhasil');
     } on Exception catch (error) {
       AppLog.w(_tag, 'Hapus konsumsi $id gagal', error);
+      emit(state.copyWith(clearDeleting: true, deleteErrorMessage: deleteErrorText));
       return false;
     }
+    emit(state.copyWith(clearDeleting: true));
     await _fetchSummary();
     return true;
   }
@@ -91,11 +119,29 @@ class AddConsumptionNotifier extends StateNotifier<AddConsumptionState> {
     final previous = state.summary;
     try {
       final summary = await _getDailySummary(_clock());
-      emit(state.copyWith(loadStatus: _statusFor(summary), summary: summary, clearLoadError: true));
+      final frequentFoods = await _loadFrequentFoods();
+      emit(state.copyWith(
+        loadStatus: _statusFor(summary),
+        summary: summary,
+        frequentFoods: frequentFoods,
+        clearLoadError: true,
+      ));
       await _alertIfNeeded(previous, summary);
     } on Exception catch (error) {
       AppLog.w(_tag, 'Ringkasan harian gagal dimuat', error);
       emit(state.copyWith(loadStatus: LoadStatus.error, loadErrorMessage: loadErrorText));
+    }
+  }
+
+  /// Daftar catat cepat bersifat tambahan; jika gagal dimuat, ringkasan tetap tampil.
+  Future<List<FrequentFood>> _loadFrequentFoods() async {
+    final getFrequentFoods = _getFrequentFoods;
+    if (getFrequentFoods == null) return const [];
+    try {
+      return await getFrequentFoods();
+    } on Exception catch (error) {
+      AppLog.w(_tag, 'Daftar catat cepat gagal dimuat', error);
+      return const [];
     }
   }
 

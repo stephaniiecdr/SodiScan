@@ -5,6 +5,7 @@ import 'package:sodiscan/core/theme/app_theme.dart';
 import 'package:sodiscan/domain/usecases/delete_consumption.dart';
 import 'package:sodiscan/domain/usecases/get_consumption_history.dart';
 import 'package:sodiscan/domain/usecases/get_daily_summary.dart';
+import 'package:sodiscan/domain/usecases/get_frequent_foods.dart';
 import 'package:sodiscan/domain/usecases/get_product_by_barcode.dart';
 import 'package:sodiscan/domain/usecases/record_consumption.dart';
 import 'package:sodiscan/domain/usecases/sync_consumptions.dart';
@@ -37,6 +38,7 @@ Future<void> pumpHomeApp(
   ScanResult? scanResult,
   double pixelRatio = 1,
   TransitionBuilder? overlay,
+  bool quickAdd = false,
 }) async {
   useLogicalSize(tester, size, pixelRatio: pixelRatio);
   final syncRepository = server ?? FakeConsumptionSyncRepository();
@@ -46,6 +48,7 @@ Future<void> pumpHomeApp(
     recordConsumption: recordConsumption,
     updateConsumption: UpdateConsumption(repository),
     deleteConsumption: DeleteConsumption(repository),
+    getFrequentFoods: quickAdd ? GetFrequentFoods(repository) : null,
     clock: () => fixedNow,
   );
   addTearDown(notifier.dispose);

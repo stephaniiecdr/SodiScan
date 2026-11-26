@@ -10,8 +10,10 @@ class FakeConsumptionSyncRepository implements ConsumptionSyncRepository {
   final List<FoodConsumption> items;
 
   Failure? failWith;
+  Set<String> failIds = {};
   Completer<void>? gate;
   int fetchCalls = 0;
+  int uploadCalls = 0;
 
   @override
   Future<List<FoodConsumption>> fetchFromServer() async {
@@ -21,10 +23,24 @@ class FakeConsumptionSyncRepository implements ConsumptionSyncRepository {
     return List.of(items);
   }
 
+  Set<String> failDeleteIds = {};
+  int deleteCalls = 0;
+
   @override
-  Future<void> uploadToServer(FoodConsumption consumption) async {
+  Future<void> deleteFromServer(String id) async {
+    deleteCalls++;
     if (gate != null) await gate!.future;
     if (failWith != null) throw failWith!;
+    if (failDeleteIds.contains(id)) throw NetworkFailure('delete $id failed');
+    items.removeWhere((item) => item.id == id);
+  }
+
+  @override
+  Future<void> uploadToServer(FoodConsumption consumption) async {
+    uploadCalls++;
+    if (gate != null) await gate!.future;
+    if (failWith != null) throw failWith!;
+    if (failIds.contains(consumption.id)) throw NetworkFailure('upload ${consumption.id} failed');
     items
       ..removeWhere((item) => item.id == consumption.id)
       ..add(consumption);

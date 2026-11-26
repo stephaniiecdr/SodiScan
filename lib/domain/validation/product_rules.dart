@@ -5,6 +5,9 @@ const String barcodeRequiredMessage = 'Kode barcode wajib diisi.';
 const String barcodeNotNumberMessage = 'Kode barcode hanya boleh berisi angka.';
 const String barcodeLengthMessage = 'Kode barcode harus 8 sampai 13 digit.';
 
+const double maxServingAmount = 20;
+const double maxGramAmount = 5000;
+
 final RegExp _digitsPattern = RegExp(r'^\d+$');
 final RegExp _barcodePattern = RegExp(r'^\d{8,13}$');
 
@@ -20,8 +23,18 @@ String? validateBarcode(String? value) {
 
 String amountLabel(ConsumptionUnit unit) => unit == ConsumptionUnit.serving ? 'Jumlah porsi' : 'Berat';
 
+double maxAmountFor(ConsumptionUnit unit) => unit == ConsumptionUnit.serving ? maxServingAmount : maxGramAmount;
+
+String amountTooLargeMessage(ConsumptionUnit unit) {
+  return unit == ConsumptionUnit.serving
+      ? 'Jumlah porsi maksimal ${maxServingAmount.toInt()} porsi.'
+      : 'Berat maksimal ${maxGramAmount.toInt()} g.';
+}
+
 double? parseAmount(String? input) => parseDecimal(input);
 
 String? validateAmount(String? value, ConsumptionUnit unit) {
-  return validatePositiveNumber(value, label: amountLabel(unit), parse: parseAmount);
+  final error = validatePositiveNumber(value, label: amountLabel(unit), parse: parseAmount);
+  if (error != null) return error;
+  return parseAmount(value)! > maxAmountFor(unit) ? amountTooLargeMessage(unit) : null;
 }
