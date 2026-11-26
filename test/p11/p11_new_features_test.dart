@@ -1,22 +1,36 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:provider/provider.dart';
 import 'package:sodiscan/core/errors/failures.dart';
 import 'package:sodiscan/data/datasources/local/consumption_local_data_source.dart';
 import 'package:sodiscan/data/datasources/remote/consumption_remote_data_source.dart';
 import 'package:sodiscan/data/repositories/consumption_repository_impl.dart';
 import 'package:sodiscan/data/repositories/consumption_sync_repository_impl.dart';
+import 'package:sodiscan/data/repositories/settings_repository_impl.dart';
+import 'package:sodiscan/domain/entities/daily_nutrition.dart';
 import 'package:sodiscan/domain/entities/food_consumption.dart';
+import 'package:sodiscan/domain/entities/risk_status.dart';
 import 'package:sodiscan/domain/entities/sync_report.dart';
+import 'package:sodiscan/domain/repositories/settings_repository.dart';
+import 'package:sodiscan/domain/services/device_authenticator.dart';
+import 'package:sodiscan/domain/services/notification_service.dart';
 import 'package:sodiscan/domain/usecases/delete_consumption.dart';
+import 'package:sodiscan/domain/usecases/get_consumption_history.dart';
+import 'package:sodiscan/domain/usecases/get_daily_summary.dart';
 import 'package:sodiscan/domain/usecases/sync_consumptions.dart';
+import 'package:sodiscan/domain/validation/settings_rules.dart';
 import 'package:sodiscan/presentation/providers/server_sync_notifier.dart';
+import 'package:sodiscan/presentation/providers/settings_notifier.dart';
+import 'package:sodiscan/presentation/screens/settings/settings_screen.dart';
 
 import '../helpers/fake_consumption_repository.dart';
 import '../helpers/fake_consumption_sync_repository.dart';
+import '../helpers/fake_device_services.dart';
 
 FoodConsumption _item(String id, String name, {double sodium = 500, DateTime? at}) {
   return FoodConsumption(
@@ -28,7 +42,234 @@ FoodConsumption _item(String id, String name, {double sodium = 500, DateTime? at
   );
 }
 
+class _FailingSettingsRepository implements SettingsRepository {
+  @override
+  Future<AppSettings> load() async => throw const StorageFailure('rusak');
+
+  @override
+  Future<void> save(AppSettings settings) async {}
+}
+
 void main() {
+  group('Fitur #16 target natrium harian bisa diatur', () {
+    test('RiskStatus mengikuti target: Mendekati Batas mulai di atas 75% target', () {
+      expect(RiskStatus.fromTotal(1125, limitMg: 1500), RiskStatus.safe);
+      expect(RiskStatus.fromTotal(1126, limitMg: 1500), RiskStatus.nearLimit);
+      expect(RiskStatus.fromTotal(1500, limitMg: 1500), RiskStatus.nearLimit);
+      expect(RiskStatus.fromTotal(1501, limitMg: 1500), RiskStatus.danger);
+    });
+
+    test('tanpa target, perilaku lama (2000 mg) tidak berubah', () {
+      expect(RiskStatus.fromTotal(1500), RiskStatus.safe);
+      expect(RiskStatus.fromTotal(2000), RiskStatus.nearLimit);
+      expect(RiskStatus.fromTotal(2001), RiskStatus.danger);
+    });
+
+    test('DailyNutrition memakai target untuk sisa, kelebihan, dan progres', () {
+      final summary = DailyNutrition.fromConsumptions(fixedNow, [_item('a', 'Bakso', sodium: 1200)], dailyLimitMg: 1000);
+
+      expect(summary.dailyLimitMg, 1000);
+      expect(summary.isOverLimit, isTrue);
+      expect(summary.exceededMg, 200);
+      expect(summary.progress, 1.0);
+      expect(summary.riskStatus, RiskStatus.danger);
+    });
+
+    test('GetDailySummary membaca target dari pengaturan', () async {
+      final repository = FakeConsumptionRepository(items: [_item('a', 'Bakso', sodium: 1200)]);
+      final settings = FakeSettingsRepository(const AppSettings(dailyLimitMg: 1500));
+
+      final summary = await GetDailySummary(repository, settingsRepository: settings)(fixedNow);
+
+      expect(summary.dailyLimitMg, 1500);
+      expect(summary.riskStatus, RiskStatus.nearLimit);
+    });
+
+    test('GetConsumptionHistory memakai target yang sama untuk setiap hari', () async {
+      final repository = FakeConsumptionRepository(items: [
+        _item('a', 'Bakso', sodium: 1200),
+        _item('b', 'Soto', sodium: 900, at: fixedNow.subtract(const Duration(days: 1))),
+      ]);
+      final settings = FakeSettingsRepository(const AppSettings(dailyLimitMg: 1000));
+
+      final days = await GetConsumptionHistory(repository, settingsRepository: settings)();
+
+      expect(days.map((day) => day.dailyLimitMg), everyElement(1000));
+      expect(days.map((day) => day.riskStatus), [RiskStatus.danger, RiskStatus.nearLimit]);
+    });
+
+    test('pengaturan gagal dibaca: ringkasan tetap tampil dengan batas default 2000 mg', () async {
+      final repository = FakeConsumptionRepository(items: [_item('a', 'Bakso', sodium: 1200)]);
+
+      final summary = await GetDailySummary(repository, settingsRepository: _FailingSettingsRepository())(fixedNow);
+
+      expect(summary.dailyLimitMg, 2000);
+    });
+
+    test('validasi target: kosong, bukan angka, dan di luar 1000–3000 ditolak', () {
+      expect(validateDailyLimit('1500'), isNull);
+      expect(validateDailyLimit('1000'), isNull);
+      expect(validateDailyLimit('3000'), isNull);
+      expect(validateDailyLimit(''), 'Target natrium wajib diisi.');
+      expect(validateDailyLimit('abc'), 'Target natrium harus berupa angka.');
+      expect(validateDailyLimit('999'), dailyLimitRangeMessage);
+      expect(validateDailyLimit('3001'), dailyLimitRangeMessage);
+    });
+
+    test('SettingsNotifier.setDailyLimit menyimpan target dan memberi pesan', () async {
+      final settings = FakeSettingsRepository();
+      final notifier = SettingsNotifier(
+        settingsRepository: settings,
+        authenticator: FakeDeviceAuthenticator(),
+        notificationService: FakeNotificationService(),
+      );
+      await notifier.load();
+
+      final message = await notifier.setDailyLimit(1500);
+
+      expect(message, 'Target natrium harian diatur ke 1500 mg.');
+      expect(settings.settings.dailyLimitMg, 1500);
+      expect(notifier.settings!.dailyLimitMg, 1500);
+    });
+
+    test('SettingsNotifier menolak target di luar rentang tanpa menyimpan', () async {
+      final settings = FakeSettingsRepository();
+      final notifier = SettingsNotifier(
+        settingsRepository: settings,
+        authenticator: FakeDeviceAuthenticator(),
+        notificationService: FakeNotificationService(),
+      );
+      await notifier.load();
+
+      expect(await notifier.setDailyLimit(500), dailyLimitRangeMessage);
+      expect(settings.settings.dailyLimitMg, 2000);
+    });
+
+    test('SettingsNotifier: gagal simpan memberi pesan error dan target lama tetap', () async {
+      final settings = FakeSettingsRepository()..failSave = true;
+      final notifier = SettingsNotifier(
+        settingsRepository: settings,
+        authenticator: FakeDeviceAuthenticator(),
+        notificationService: FakeNotificationService(),
+      );
+      await notifier.load();
+
+      expect(await notifier.setDailyLimit(1500), SettingsNotifier.saveErrorText);
+      expect(notifier.settings!.dailyLimitMg, 2000);
+    });
+
+    group('SettingsRepositoryImpl (Hive)', () {
+      late Directory tempDir;
+
+      Future<SettingsRepositoryImpl> open() async {
+        Hive.init(tempDir.path);
+        return SettingsRepositoryImpl(await Hive.openBox<dynamic>(SettingsRepositoryImpl.boxName));
+      }
+
+      setUp(() async => tempDir = await Directory.systemTemp.createTemp('sodiscan_limit_test'));
+
+      tearDown(() async {
+        await Hive.close();
+        await tempDir.delete(recursive: true);
+      });
+
+      test('default 2000 mg dan tetap tersimpan setelah aplikasi dibuka ulang', () async {
+        expect((await (await open()).load()).dailyLimitMg, 2000);
+
+        await (await open()).save(const AppSettings(dailyLimitMg: 1500));
+        await Hive.close();
+
+        expect((await (await open()).load()).dailyLimitMg, 1500);
+      });
+
+      test('nilai tersimpan yang rusak atau di luar rentang kembali ke default', () async {
+        final box = await Hive.openBox<dynamic>(SettingsRepositoryImpl.boxName, path: tempDir.path);
+        await box.put('dailyLimitMg', 99999);
+        await box.close();
+
+        expect((await (await open()).load()).dailyLimitMg, 2000);
+      });
+    });
+
+    group('UI Pengaturan', () {
+      late FakeSettingsRepository settings;
+
+      Future<void> pumpSettings(WidgetTester tester) async {
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: [
+              Provider<SettingsRepository>.value(value: settings),
+              Provider<DeviceAuthenticator>.value(value: FakeDeviceAuthenticator()),
+              Provider<NotificationService>.value(value: FakeNotificationService()),
+            ],
+            child: MaterialApp(
+              home: Builder(
+                builder: (context) => Scaffold(
+                  body: TextButton(
+                    onPressed: () => Navigator.of(context).push(SettingsScreen.route(context)),
+                    child: const Text('buka'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('buka'));
+        await tester.pumpAndSettle();
+      }
+
+      setUp(() => settings = FakeSettingsRepository());
+
+      testWidgets('menampilkan target saat ini', (tester) async {
+        settings.settings = const AppSettings(dailyLimitMg: 1800);
+        await pumpSettings(tester);
+
+        expect(find.textContaining('1800 mg per hari'), findsOneWidget);
+      });
+
+      testWidgets('input di luar rentang menampilkan pesan validasi dan tidak disimpan', (tester) async {
+        await pumpSettings(tester);
+
+        await tester.tap(find.byKey(const Key('dailyLimitTile')));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byKey(const Key('dailyLimitField')), '500');
+        await tester.tap(find.byKey(const Key('saveDailyLimitButton')));
+        await tester.pumpAndSettle();
+
+        expect(find.text(dailyLimitRangeMessage), findsOneWidget);
+        expect(settings.settings.dailyLimitMg, 2000);
+      });
+
+      testWidgets('memilih preset 1500 mg lalu Simpan mengubah target', (tester) async {
+        await pumpSettings(tester);
+
+        await tester.tap(find.byKey(const Key('dailyLimitTile')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('dailyLimitPreset_1500')));
+        await tester.pump();
+        await tester.tap(find.byKey(const Key('saveDailyLimitButton')));
+        await tester.pumpAndSettle();
+
+        expect(settings.settings.dailyLimitMg, 1500);
+        expect(find.text('Target natrium harian diatur ke 1500 mg.'), findsOneWidget);
+        expect(find.textContaining('1500 mg per hari'), findsOneWidget);
+      });
+
+      testWidgets('Batal menutup dialog tanpa mengubah target', (tester) async {
+        await pumpSettings(tester);
+
+        await tester.tap(find.byKey(const Key('dailyLimitTile')));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byKey(const Key('dailyLimitField')), '1200');
+        await tester.tap(find.text('Batal'));
+        await tester.pumpAndSettle();
+
+        expect(settings.settings.dailyLimitMg, 2000);
+        expect(find.byKey(const Key('dailyLimitField')), findsNothing);
+      });
+    });
+  });
+
   group('Bug #18 catatan yang dihapus muncul lagi setelah "Ambil ke HP"', () {
     test('menghapus catatan menyimpan tombstone', () async {
       final repository = FakeConsumptionRepository(items: [indomieConsumption()]);

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/utils/sodium_format.dart';
 import '../../domain/repositories/settings_repository.dart';
+import '../../domain/validation/settings_rules.dart';
 import '../../domain/services/device_authenticator.dart';
 import '../../domain/services/notification_service.dart';
 import 'base_notifier.dart';
@@ -58,6 +60,16 @@ class SettingsNotifier extends ChangeNotifier with SafeNotifier {
     return _change(() async {
       if (enabled && !await _notificationService.requestPermission()) return (null, notificationDeniedText);
       return (_settings!.copyWith(sodiumAlertsEnabled: enabled), enabled ? notificationOnText : notificationOffText);
+    });
+  }
+
+  static String dailyLimitSavedText(int limitMg) => 'Target natrium harian diatur ke ${formatSodiumMg(limitMg.toDouble())}.';
+
+  Future<String?> setDailyLimit(int limitMg) {
+    return _change(() async {
+      if (!isValidDailyLimit(limitMg)) return (null, dailyLimitRangeMessage);
+      if (limitMg == _settings!.dailyLimitMg) return (null, dailyLimitSavedText(limitMg));
+      return (_settings!.copyWith(dailyLimitMg: limitMg), dailyLimitSavedText(limitMg));
     });
   }
 

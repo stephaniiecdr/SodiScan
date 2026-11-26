@@ -51,7 +51,7 @@ class SodiScanApp extends StatelessWidget {
       providers: [
         Provider.value(value: recordConsumption),
         Provider.value(value: GetProductByBarcode(productRepository)),
-        Provider.value(value: GetConsumptionHistory(consumptionRepository)),
+        Provider.value(value: GetConsumptionHistory(consumptionRepository, settingsRepository: settingsRepository)),
         Provider.value(value: settingsRepository),
         Provider.value(value: authenticator),
         Provider.value(value: notificationService),
@@ -64,7 +64,7 @@ class SodiScanApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => AddConsumptionNotifier(
-            getDailySummary: GetDailySummary(consumptionRepository),
+            getDailySummary: GetDailySummary(consumptionRepository, settingsRepository: settingsRepository),
             recordConsumption: recordConsumption,
             updateConsumption: UpdateConsumption(consumptionRepository),
             deleteConsumption: DeleteConsumption(consumptionRepository),

@@ -45,7 +45,7 @@ class HomeScreen extends StatelessWidget {
             key: const Key('openSettingsButton'),
             tooltip: 'Pengaturan',
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Navigator.of(context).push(SettingsScreen.route(context)),
+            onPressed: () => _openSettings(context),
           ),
         ],
       ),
@@ -280,6 +280,13 @@ Future<void> _openProductLookup(BuildContext context) async {
   } else if (saved == false) {
     await navigator.push(AddConsumptionScreen.route());
   }
+}
+
+/// Target natrium bisa diubah di Pengaturan, jadi ringkasan dihitung ulang setelah kembali.
+Future<void> _openSettings(BuildContext context) async {
+  final notifier = context.read<AddConsumptionNotifier>();
+  await Navigator.of(context).push(SettingsScreen.route(context));
+  await notifier.refresh();
 }
 
 Future<void> _openManualInput(BuildContext context) => Navigator.of(context).push(AddConsumptionScreen.route());
