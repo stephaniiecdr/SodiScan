@@ -52,17 +52,25 @@ class ServerSyncNotifier extends StateNotifier<ServerSyncState> {
       });
 
   static String uploadMessage(UploadReport report) {
-    if (!report.hasFailures) return '${report.total} catatan dikirim ke server.';
+    final deleted = report.deleted > 0 ? ' ${report.deleted} catatan yang dihapus juga dihapus dari server.' : '';
+    if (!report.hasFailures) return '${report.total} catatan dikirim ke server.$deleted';
 
-    final names = report.failed.map((item) => item.productName).take(3).join(', ');
-    final more = report.failed.length > 3 ? ', dan lainnya' : '';
-    return '${report.successCount} dari ${report.total} catatan dikirim. '
-        '${report.failed.length} gagal ($names$more). Tekan "Kirim ke Server" lagi untuk mengulang.';
+    final parts = <String>['${report.successCount} dari ${report.total} catatan dikirim.'];
+    if (report.failed.isNotEmpty) {
+      final names = report.failed.map((item) => item.productName).take(3).join(', ');
+      final more = report.failed.length > 3 ? ', dan lainnya' : '';
+      parts.add('${report.failed.length} gagal ($names$more).');
+    }
+    if (report.failedDeletes > 0) parts.add('${report.failedDeletes} penghapusan belum terkirim.');
+    return '${parts.join(' ')}$deleted Tekan "Kirim ke Server" lagi untuk mengulang.';
   }
 
   static String restoreMessage(RestoreReport report) {
     final parts = <String>['${report.savedCount} catatan dari server disimpan ke perangkat.'];
     if (report.keptLocal > 0) parts.add('${report.keptLocal} catatan lokal yang lebih baru dipertahankan.');
+    if (report.skippedDeleted > 0) {
+      parts.add('${report.skippedDeleted} catatan yang sudah Anda hapus tidak dikembalikan.');
+    }
     return parts.join(' ');
   }
 

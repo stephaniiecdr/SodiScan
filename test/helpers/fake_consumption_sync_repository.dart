@@ -23,6 +23,18 @@ class FakeConsumptionSyncRepository implements ConsumptionSyncRepository {
     return List.of(items);
   }
 
+  Set<String> failDeleteIds = {};
+  int deleteCalls = 0;
+
+  @override
+  Future<void> deleteFromServer(String id) async {
+    deleteCalls++;
+    if (gate != null) await gate!.future;
+    if (failWith != null) throw failWith!;
+    if (failDeleteIds.contains(id)) throw NetworkFailure('delete $id failed');
+    items.removeWhere((item) => item.id == id);
+  }
+
   @override
   Future<void> uploadToServer(FoodConsumption consumption) async {
     uploadCalls++;

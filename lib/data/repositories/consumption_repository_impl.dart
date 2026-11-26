@@ -40,6 +40,16 @@ class ConsumptionRepositoryImpl implements ConsumptionRepository {
     return guardStorage('menghapus data konsumsi', () => _localDataSource.delete(id));
   }
 
+  @override
+  Future<Set<String>> getDeletedIds() {
+    return guardStorage('membaca daftar data terhapus', () async => _localDataSource.deletedIds());
+  }
+
+  @override
+  Future<void> forgetDeleted(String id) {
+    return guardStorage('memperbarui daftar data terhapus', () => _localDataSource.forgetDeleted(id));
+  }
+
   Iterable<FoodConsumption> _readAll() => _localDataSource.getAll().map((model) => model.toEntity());
 
   Future<void> _write(FoodConsumption consumption) => _localDataSource.save(FoodConsumptionModel.fromEntity(consumption));

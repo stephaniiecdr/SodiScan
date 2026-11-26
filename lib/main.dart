@@ -31,6 +31,7 @@ Future<void> main() async {
   AppLog.i('App', 'SodiScan dimulai (mode: ${_buildMode()}, platform: ${defaultTargetPlatform.name}, API: $apiBaseUrl)');
 
   final box = await Hive.openBox<Map>(ConsumptionLocalDataSource.boxName);
+  final deletedBox = await Hive.openBox<dynamic>(ConsumptionLocalDataSource.deletedBoxName);
   final settingsBox = await Hive.openBox<dynamic>(SettingsRepositoryImpl.boxName);
   final notificationService = await LocalNotificationService.create();
   final client = LoggingHttpClient(http.Client());
@@ -38,7 +39,7 @@ Future<void> main() async {
 
   runApp(
     SodiScanApp(
-      consumptionRepository: ConsumptionRepositoryImpl(ConsumptionLocalDataSource(box)),
+      consumptionRepository: ConsumptionRepositoryImpl(ConsumptionLocalDataSource(box, deletedBox: deletedBox)),
       consumptionSyncRepository: ConsumptionSyncRepositoryImpl(ConsumptionRemoteDataSource(client, baseUrl: apiBaseUrl)),
       productRepository: ProductRepositoryImpl(OpenFoodFactsRemoteDataSource(client)),
       settingsRepository: SettingsRepositoryImpl(settingsBox),

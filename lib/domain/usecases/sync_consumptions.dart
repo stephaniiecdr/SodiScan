@@ -24,9 +24,23 @@ class UploadConsumptions {
   /// catatan berikutnya. Jika semua gagal, error pertama dilempar ulang agar UI
   /// dapat menampilkan penyebabnya (misalnya server mati).
   Future<UploadReport> call() async {
+    final deletedIds = await _localRepository.getDeletedIds();
     final items = await _localRepository.getAllConsumptions();
     final failed = <FoodConsumption>[];
+    var deleted = 0;
+    var failedDeletes = 0;
     Exception? firstError;
+
+    for (final id in deletedIds) {
+      try {
+        await _syncRepository.deleteFromServer(id);
+        await _localRepository.forgetDeleted(id);
+        deleted++;
+      } on Exception catch (error) {
+        failedDeletes++;
+        firstError ??= error;
+      }
+    }
 
     for (final item in items) {
       try {
@@ -36,8 +50,9 @@ class UploadConsumptions {
         firstError ??= error;
       }
     }
-    if (items.isNotEmpty && failed.length == items.length) throw firstError!;
-    return UploadReport(total: items.length, failed: failed);
+    final operations = items.length + deletedIds.length;
+    if (operations > 0 && failed.length + failedDeletes == operations) throw firstError!;
+    return UploadReport(total: items.length, failed: failed, deleted: deleted, failedDeletes: failedDeletes);
   }
 }
 
@@ -48,16 +63,21 @@ class RestoreConsumptions {
   final ConsumptionRepository _localRepository;
 
   /// Kebijakan konflik: last-modified-wins. Catatan lokal yang diubah lebih
-  /// baru daripada versi server tidak ditimpa.
+  /// baru daripada versi server tidak ditimpa. Catatan yang sudah dihapus di
+  /// perangkat (tombstone) tidak dikembalikan.
   Future<RestoreReport> call() async {
     final serverItems = await _syncRepository.fetchFromServer();
     final localById = {for (final item in await _localRepository.getAllConsumptions()) item.id: item};
+    final deletedIds = await _localRepository.getDeletedIds();
     var added = 0;
     var updated = 0;
     var keptLocal = 0;
+    var skippedDeleted = 0;
     for (final item in serverItems) {
       final local = localById[item.id];
-      if (local == null) {
+      if (deletedIds.contains(item.id)) {
+        skippedDeleted++;
+      } else if (local == null) {
         await _localRepository.saveConsumption(item);
         added++;
       } else if (local.lastModifiedAt.isAfter(item.lastModifiedAt)) {
@@ -67,6 +87,6 @@ class RestoreConsumptions {
         updated++;
       }
     }
-    return RestoreReport(added: added, updated: updated, keptLocal: keptLocal);
+    return RestoreReport(added: added, updated: updated, keptLocal: keptLocal, skippedDeleted: skippedDeleted);
   }
 }
