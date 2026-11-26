@@ -84,9 +84,10 @@ jobs:
       - name: Checksum
         run: sha256sum build/app/outputs/flutter-apk/app-release.apk > build/app/outputs/flutter-apk/app-release.apk.sha256
 
+      # Nama artifact tidak boleh memuat "/" (pada PR, ref_name berbentuk "19/merge").
       - uses: actions/upload-artifact@v4
         with:
-          name: sodiscan-${{ github.ref_name }}-${{ github.run_number }}
+          name: sodiscan-apk-${{ github.run_number }}
           path: |
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/flutter-apk/app-release.apk.sha256
@@ -101,7 +102,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: sodiscan-${{ github.ref_name }}-${{ github.run_number }}
+          name: sodiscan-apk-${{ github.run_number }}
           path: dist
 
       - name: Publish GitHub pre-release
