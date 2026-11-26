@@ -1,11 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sodiscan/core/errors/failures.dart';
 import 'package:sodiscan/domain/entities/food_consumption.dart';
+import 'package:sodiscan/domain/entities/product.dart';
 import 'package:sodiscan/domain/entities/sync_report.dart';
+import 'package:sodiscan/domain/usecases/get_product_by_barcode.dart';
 import 'package:sodiscan/domain/usecases/record_consumption.dart';
 import 'package:sodiscan/domain/usecases/update_consumption.dart';
+import 'package:sodiscan/domain/validation/consumption_rules.dart';
+import 'package:sodiscan/domain/validation/product_rules.dart';
+import 'package:sodiscan/presentation/providers/product_lookup_notifier.dart';
 import 'package:sodiscan/presentation/providers/server_sync_notifier.dart';
 
 import '../helpers/fake_consumption_repository.dart';
+import '../helpers/fake_product_repository.dart';
 
 FoodConsumption _item(String id, String name) {
   return FoodConsumption(
@@ -79,4 +86,63 @@ void main() {
       expect(created.lastModifiedAt, fixedNow);
     });
   });
+
+  group('Issue #3 porsi/berat ekstrem tidak menghasilkan Infinity', () {
+    test('jumlah porsi di atas batas ditolak', () {
+      expect(validateAmount('20', ConsumptionUnit.serving), isNull);
+      expect(validateAmount('21', ConsumptionUnit.serving), amountTooLargeMessage(ConsumptionUnit.serving));
+      expect(validateAmount('1e308', ConsumptionUnit.serving), amountTooLargeMessage(ConsumptionUnit.serving));
+    });
+
+    test('berat di atas batas ditolak', () {
+      expect(validateAmount('5000', ConsumptionUnit.gram), isNull);
+      expect(validateAmount('5000,5', ConsumptionUnit.gram), amountTooLargeMessage(ConsumptionUnit.gram));
+    });
+
+    test('pesan batas menyebut satuan yang benar', () {
+      expect(amountTooLargeMessage(ConsumptionUnit.serving), 'Jumlah porsi maksimal 20 porsi.');
+      expect(amountTooLargeMessage(ConsumptionUnit.gram), 'Berat maksimal 5000 g.');
+    });
+
+    test('angka yang tidak terbatas (Infinity) ditolak parser', () {
+      expect(validateAmount('1e400', ConsumptionUnit.gram), notNumberMessageFor(ConsumptionUnit.gram));
+    });
+
+    test('Product.sodiumFor melempar ValidationFailure jika hasil kali menjadi Infinity', () {
+      expect(() => indomieProduct.sodiumFor(1e308), throwsA(isA<ValidationFailure>()));
+    });
+
+    test('sodium Infinity ditolak dengan pesan "maksimal", NaN dengan pesan "lebih dari 0"', () {
+      expect(sodiumRangeError(double.infinity), sodiumTooLargeMessage);
+      expect(sodiumRangeError(double.nan), sodiumNotPositiveMessage);
+      expect(sodiumRangeError(double.negativeInfinity), sodiumNotPositiveMessage);
+    });
+
+    test('RecordConsumption tidak menyimpan Infinity ke penyimpanan', () async {
+      final repository = FakeConsumptionRepository();
+
+      await expectLater(
+        RecordConsumption(repository)(productName: 'Garam', sodiumMg: double.infinity),
+        throwsA(isA<ValidationFailure>()),
+      );
+      expect(repository.saveCalls, 0);
+    });
+
+    test('ProductLookupNotifier menampilkan pesan error jika porsi membuat sodium terlalu besar', () async {
+      final repository = FakeConsumptionRepository();
+      final notifier = ProductLookupNotifier(
+        getProductByBarcode: GetProductByBarcode(FakeProductRepository(product: indomieProduct)),
+        recordConsumption: RecordConsumption(repository, clock: () => fixedNow),
+      );
+      await notifier.search(indomieProduct.barcode);
+
+      final ok = await notifier.submit(20);
+
+      expect(ok, isFalse);
+      expect(notifier.state.submitErrorMessage, sodiumTooLargeMessage);
+      expect(repository.items, isEmpty);
+    });
+  });
 }
+
+String notNumberMessageFor(ConsumptionUnit unit) => '${amountLabel(unit)} harus berupa angka.';

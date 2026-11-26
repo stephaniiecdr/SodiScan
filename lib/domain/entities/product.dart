@@ -27,8 +27,14 @@ class Product {
     if (!amount.isFinite || amount <= 0) {
       throw const ValidationFailure('Jumlah porsi atau berat harus lebih dari 0.');
     }
-    if (sodiumPerServingMg != null) return sodiumPerServingMg! * amount;
-    if (sodiumPer100gMg != null) return sodiumPer100gMg! * amount / 100;
-    return 0;
+    final sodium = sodiumPerServingMg != null
+        ? sodiumPerServingMg! * amount
+        : sodiumPer100gMg != null
+            ? sodiumPer100gMg! * amount / 100
+            : 0.0;
+    if (!sodium.isFinite) {
+      throw const ValidationFailure('Jumlah porsi atau berat terlalu besar.');
+    }
+    return sodium;
   }
 }

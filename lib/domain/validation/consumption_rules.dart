@@ -20,8 +20,8 @@ String? validateSodiumMg(String? value) {
 }
 
 String? sodiumRangeError(num sodiumMg) {
-  if (!sodiumMg.isFinite || sodiumMg <= 0) return sodiumNotPositiveMessage;
-  if (sodiumMg > maxSodiumPerEntryMg) return sodiumTooLargeMessage;
+  if (sodiumMg.isNaN || sodiumMg <= 0) return sodiumNotPositiveMessage;
+  if (sodiumMg.isInfinite || sodiumMg > maxSodiumPerEntryMg) return sodiumTooLargeMessage;
   return null;
 }
 
