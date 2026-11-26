@@ -4,6 +4,7 @@ import '../../domain/entities/food_consumption.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/usecases/get_product_by_barcode.dart';
 import '../../domain/usecases/record_consumption.dart';
+import '../../domain/validation/consumption_rules.dart';
 import 'base_notifier.dart';
 import 'product_lookup_state.dart';
 
@@ -55,7 +56,7 @@ class ProductLookupNotifier extends StateNotifier<ProductLookupState> {
 
     final error = await runSubmit(
       () => _recordConsumption(
-        productName: product.name,
+        productName: clampProductName(product.name),
         sodiumMg: product.sodiumFor(amount),
         source: ConsumptionSource.scan,
         barcode: product.barcode,

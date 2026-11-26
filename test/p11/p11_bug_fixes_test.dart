@@ -299,6 +299,46 @@ void main() {
       expect(ConsumptionLocalDataSource(box).getAll(), isEmpty);
     });
   });
+
+  group('Issue #12 nama makanan dibatasi 80 karakter', () {
+    test('nama tepat 80 karakter diterima, 81 karakter ditolak', () {
+      expect(validateProductName('a' * 80), isNull);
+      expect(validateProductName('a' * 81), productNameTooLongMessage);
+    });
+
+    test('spasi di awal/akhir tidak dihitung', () {
+      expect(validateProductName('  ${'a' * 80}  '), isNull);
+    });
+
+    test('validateConsumptionInput melempar ValidationFailure untuk nama terlalu panjang', () {
+      expect(
+        () => validateConsumptionInput(productName: 'a' * 81, sodiumMg: 100),
+        throwsA(isA<ValidationFailure>().having((f) => f.message, 'message', productNameTooLongMessage)),
+      );
+    });
+
+    test('clampProductName memotong nama produk panjang menjadi 80 karakter', () {
+      expect(clampProductName('a' * 120), hasLength(80));
+      expect(clampProductName('  Indomie  '), 'Indomie');
+    });
+
+    test('produk hasil scan dengan nama sangat panjang tetap bisa disimpan', () async {
+      final repository = FakeConsumptionRepository();
+      final longProduct = Product(
+        barcode: indomieProduct.barcode,
+        name: 'Mi Instan ${'Rasa Spesial ' * 10}',
+        sodiumPerServingMg: 750,
+      );
+      final notifier = ProductLookupNotifier(
+        getProductByBarcode: GetProductByBarcode(FakeProductRepository(product: longProduct)),
+        recordConsumption: RecordConsumption(repository, clock: () => fixedNow),
+      );
+      await notifier.search(longProduct.barcode);
+
+      expect(await notifier.submit(1), isTrue);
+      expect(repository.items.single.productName.length, lessThanOrEqualTo(maxProductNameLength));
+    });
+  });
 }
 
 String notNumberMessageFor(ConsumptionUnit unit) => '${amountLabel(unit)} harus berupa angka.';
