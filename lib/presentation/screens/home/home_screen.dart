@@ -332,11 +332,12 @@ Future<void> _openProductLookup(BuildContext context) async {
     return;
   }
 
-  final saved = await navigator.push(ProductLookupScreen.route(context, initialBarcode: scan.barcode));
-  if (saved == true) {
+  final result = await navigator.push(ProductLookupScreen.route(context, initialBarcode: scan.barcode));
+  if (result == null) return;
+  if (result.isSaved) {
     await notifier.refresh();
-  } else if (saved == false) {
-    await navigator.push(AddConsumptionScreen.route());
+  } else {
+    await navigator.push(AddConsumptionScreen.route(draft: result.manualEntry));
   }
 }
 

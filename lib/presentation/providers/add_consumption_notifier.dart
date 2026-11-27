@@ -69,9 +69,9 @@ class AddConsumptionNotifier extends StateNotifier<AddConsumptionState> {
 
   Future<void> refresh() => _fetchSummary();
 
-  Future<bool> submit({required String productName, required double sodiumMg}) {
+  Future<bool> submit({required String productName, required double sodiumMg, String? barcode}) {
     return _write(
-      () => _recordConsumption(productName: productName, sodiumMg: sodiumMg),
+      () => _recordConsumption(productName: productName, sodiumMg: sodiumMg, barcode: barcode),
       errorText: submitErrorText,
     );
   }

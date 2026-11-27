@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/utils/sodium_format.dart';
 import '../../../domain/entities/product.dart';
 import '../../../domain/validation/product_rules.dart';
+import '../../providers/manual_entry_draft.dart';
 import '../../providers/product_lookup_notifier.dart';
 import '../../widgets/form_feedback.dart';
 import '../../widgets/keyboard_safe.dart';
@@ -49,7 +50,7 @@ class _PortionFormState extends State<PortionForm> {
     if (!mounted || !saved) return;
 
     showSuccessFeedback(messenger, 'Konsumsi berhasil disimpan.');
-    navigator.pop(true);
+    navigator.pop(const LookupResult.saved());
   }
 
   @override

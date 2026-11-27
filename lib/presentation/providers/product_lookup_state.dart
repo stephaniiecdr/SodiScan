@@ -1,4 +1,7 @@
 import '../../domain/entities/product.dart';
+import '../../domain/validation/consumption_rules.dart';
+import '../../domain/validation/product_rules.dart';
+import 'manual_entry_draft.dart';
 
 enum LookupStatus { idle, loading, success, empty, error }
 
@@ -18,6 +21,17 @@ class ProductLookupState {
   final String? message;
   final bool isSubmitting;
   final String? submitErrorMessage;
+
+  /// Nama produk (jika diketahui dari Open Food Facts) dan barcode valid untuk mengisi form Input Manual.
+  ManualEntryDraft get manualEntryDraft {
+    final product = this.product;
+    final code = barcode;
+    final hasRealName = product != null && product.name.trim().isNotEmpty && product.name != 'Produk ${product.barcode}';
+    return ManualEntryDraft(
+      productName: hasRealName ? clampProductName(product.name) : null,
+      barcode: code != null && isValidBarcode(code) ? code.trim() : null,
+    );
+  }
 
   ProductLookupState copyWith({
     LookupStatus? status,

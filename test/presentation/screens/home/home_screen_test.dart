@@ -125,6 +125,36 @@ void main() {
 
     expect(find.widgetWithText(AppBar, 'Input Manual'), findsOneWidget);
     expect(find.byKey(const Key('productNameField')), findsOneWidget);
+    expect(find.textContaining('barcode 12345678 belum tersedia'), findsOneWidget);
+  });
+
+  testWidgets('produk tanpa data natrium: nama terisi otomatis dan barcode ikut tersimpan dari Input Manual',
+      (tester) async {
+    repository = FakeConsumptionRepository();
+    productRepository.product = noSodiumProduct;
+    scanResult = const ScanResult.barcode('8991002101234');
+    await pumpHome(tester);
+
+    await tester.tap(find.byKey(const Key('scanBarcodeButton')));
+    await tester.pumpAndSettle();
+    expect(find.text('Data Natrium Tidak Tersedia'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Input Manual'));
+    await tester.pumpAndSettle();
+
+    final nameField = tester.widget<TextFormField>(find.byKey(const Key('productNameField')));
+    expect(nameField.controller!.text, 'Air Mineral 600 ml');
+
+    await tester.enterText(find.byKey(const Key('sodiumField')), '15');
+    await tester.tap(find.byKey(const Key('submitButton')));
+    await tester.pumpAndSettle();
+
+    final saved = repository.items.single;
+    expect(saved.productName, 'Air Mineral 600 ml');
+    expect(saved.sodiumMg, 15);
+    expect(saved.barcode, '8991002101234');
+    expect(saved.source, ConsumptionSource.manual);
+    expect(find.text('SodiScan'), findsOneWidget);
   });
 
   testWidgets('kamera membaca barcode lalu Cari Produk langsung mencari produk tersebut', (tester) async {
