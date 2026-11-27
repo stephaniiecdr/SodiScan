@@ -40,7 +40,7 @@ void main() {
       MultiProvider(
         providers: [
           Provider.value(value: recordConsumption),
-          Provider.value(value: GetProductByBarcode(productRepository)),
+          Provider.value(value: GetProductByBarcode(productRepository, history: repository)),
           Provider.value(value: GetConsumptionHistory(repository)),
           Provider<ScanBarcode>.value(value: (_) async => scanResult),
           ChangeNotifierProvider.value(value: notifier..load()),
@@ -155,6 +155,37 @@ void main() {
     expect(saved.barcode, '8991002101234');
     expect(saved.source, ConsumptionSource.manual);
     expect(find.text('SodiScan'), findsOneWidget);
+  });
+
+  testWidgets('ingat produk: barcode yang pernah diinput manual langsung dikenali saat dipindai ulang',
+      (tester) async {
+    repository = FakeConsumptionRepository();
+    scanResult = const ScanResult.barcode('12345678');
+    await pumpHome(tester);
+
+    // Scan pertama: produk tidak ada di Open Food Facts, lalu dicatat lewat Input Manual.
+    await tester.tap(find.byKey(const Key('scanBarcodeButton')));
+    await tester.pumpAndSettle();
+    expect(find.text('Produk Tidak Ditemukan'), findsOneWidget);
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Input Manual'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('productNameField')), 'Keripik Singkong Pedas');
+    await tester.enterText(find.byKey(const Key('sodiumField')), '320');
+    await tester.tap(find.byKey(const Key('submitButton')));
+    await tester.pumpAndSettle();
+    expect(repository.items.single.barcode, '12345678');
+
+    // Scan kedua: produk dikenali dari catatan sendiri tanpa ke Open Food Facts.
+    final lookupsBefore = productRepository.lookupCalls;
+    await tester.tap(find.byKey(const Key('scanBarcodeButton')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Produk Tidak Ditemukan'), findsNothing);
+    expect(find.text('Keripik Singkong Pedas'), findsOneWidget);
+    expect(find.byKey(const Key('fromHistoryChip')), findsOneWidget);
+    expect(find.text('320 mg'), findsOneWidget);
+    expect(find.text('Jumlah Porsi'), findsOneWidget);
+    expect(productRepository.lookupCalls, lookupsBefore);
   });
 
   testWidgets('kamera membaca barcode lalu Cari Produk langsung mencari produk tersebut', (tester) async {

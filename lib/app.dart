@@ -51,7 +51,7 @@ class SodiScanApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider.value(value: recordConsumption),
-        Provider.value(value: GetProductByBarcode(productRepository)),
+        Provider.value(value: GetProductByBarcode(productRepository, history: consumptionRepository)),
         Provider.value(value: GetConsumptionHistory(consumptionRepository, settingsRepository: settingsRepository)),
         Provider.value(value: settingsRepository),
         Provider.value(value: authenticator),

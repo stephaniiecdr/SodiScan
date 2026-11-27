@@ -10,6 +10,7 @@ class Product {
     this.servingSize,
     this.sodiumPer100gMg,
     this.sodiumPerServingMg,
+    this.isFromHistory = false,
   });
 
   final String barcode;
@@ -18,6 +19,9 @@ class Product {
   final String? servingSize;
   final double? sodiumPer100gMg;
   final double? sodiumPerServingMg;
+
+  /// `true` jika data berasal dari catatan Input Manual pengguna di perangkat, bukan dari Open Food Facts.
+  final bool isFromHistory;
 
   bool get hasSodiumData => sodiumPerServingMg != null || sodiumPer100gMg != null;
 
