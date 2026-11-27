@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../domain/usecases/get_product_by_barcode.dart';
 import '../../../domain/usecases/record_consumption.dart';
+import '../../providers/manual_entry_draft.dart';
 import '../../providers/product_lookup_notifier.dart';
 import '../../providers/product_lookup_state.dart';
 import '../../widgets/adaptive_layout.dart';
@@ -16,11 +17,11 @@ class ProductLookupScreen extends StatelessWidget {
 
   final String? initialBarcode;
 
-  static Route<bool> route(BuildContext context, {String? initialBarcode}) {
+  static Route<LookupResult> route(BuildContext context, {String? initialBarcode}) {
     final getProductByBarcode = context.read<GetProductByBarcode>();
     final recordConsumption = context.read<RecordConsumption>();
 
-    return MaterialPageRoute<bool>(
+    return MaterialPageRoute<LookupResult>(
       settings: const RouteSettings(name: '/product-lookup'),
       builder: (_) => ChangeNotifierProvider(
         create: (_) {
@@ -103,7 +104,7 @@ class _LookupResult extends StatelessWidget {
           message: '${state.message} Gunakan Input Manual untuk mencatat konsumsi.',
           actionLabel: 'Input Manual',
           actionIcon: Icons.edit_note,
-          onAction: () => Navigator.of(context).pop(false),
+          onAction: () => _openManualEntry(context),
         ),
       LookupStatus.error => StateMessage(
           icon: Icons.wifi_off,
@@ -111,6 +112,8 @@ class _LookupResult extends StatelessWidget {
           message: state.message ?? ProductLookupNotifier.networkErrorText,
           actionLabel: 'Coba Lagi',
           onAction: context.read<ProductLookupNotifier>().retry,
+          secondaryActionLabel: 'Input Manual',
+          onSecondaryAction: () => _openManualEntry(context),
         ),
       LookupStatus.success => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -121,5 +124,10 @@ class _LookupResult extends StatelessWidget {
           ],
         ),
     };
+  }
+
+  /// Kembali ke Beranda dan minta form Input Manual dibuka dengan nama produk dan barcode yang sudah diketahui.
+  void _openManualEntry(BuildContext context) {
+    Navigator.of(context).pop(LookupResult.manualEntry(state.manualEntryDraft));
   }
 }

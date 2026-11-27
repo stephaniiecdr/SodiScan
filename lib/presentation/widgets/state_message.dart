@@ -9,6 +9,9 @@ class StateMessage extends StatelessWidget {
     this.actionLabel,
     this.onAction,
     this.actionIcon = Icons.refresh,
+    this.secondaryActionLabel,
+    this.onSecondaryAction,
+    this.secondaryActionIcon = Icons.edit_note,
   });
 
   final IconData icon;
@@ -17,6 +20,14 @@ class StateMessage extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
   final IconData actionIcon;
+
+  /// Aksi alternatif, misalnya Input Manual di samping Coba Lagi.
+  final String? secondaryActionLabel;
+  final VoidCallback? onSecondaryAction;
+  final IconData secondaryActionIcon;
+
+  bool get _hasAction => actionLabel != null && onAction != null;
+  bool get _hasSecondaryAction => secondaryActionLabel != null && onSecondaryAction != null;
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +49,23 @@ class StateMessage extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(message, style: textTheme.bodyMedium, textAlign: TextAlign.center),
-            if (actionLabel != null && onAction != null) ...[
+            if (_hasAction || _hasSecondaryAction) ...[
               const SizedBox(height: 16),
-              OutlinedButton.icon(onPressed: onAction, icon: Icon(actionIcon), label: Text(actionLabel!)),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  if (_hasAction)
+                    OutlinedButton.icon(onPressed: onAction, icon: Icon(actionIcon), label: Text(actionLabel!)),
+                  if (_hasSecondaryAction)
+                    FilledButton.tonalIcon(
+                      onPressed: onSecondaryAction,
+                      icon: Icon(secondaryActionIcon),
+                      label: Text(secondaryActionLabel!),
+                    ),
+                ],
+              ),
             ],
           ],
         ),

@@ -22,6 +22,19 @@ class ProductInfoCard extends StatelessWidget {
             if (product.brand != null) Text(product.brand!, style: textTheme.bodyMedium),
             const SizedBox(height: 4),
             Text('Barcode ${product.barcode}', style: textTheme.bodySmall),
+            if (product.isFromHistory) ...[
+              const SizedBox(height: 8),
+              const Chip(
+                key: Key('fromHistoryChip'),
+                avatar: Icon(Icons.history, size: 18),
+                label: Text('Dari catatan Anda'),
+                visualDensity: VisualDensity.compact,
+              ),
+              Text(
+                'Nilai natrium diambil dari Input Manual terakhir Anda untuk barcode ini.',
+                style: textTheme.bodySmall,
+              ),
+            ],
             const Divider(height: 24),
             _InfoRow(label: 'Takaran saji', value: product.servingSize ?? '-'),
             _InfoRow(label: 'Natrium per saji', value: _sodium(product.sodiumPerServingMg)),

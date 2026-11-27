@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:sodiscan/domain/entities/food_consumption.dart';
 import 'package:sodiscan/domain/usecases/get_product_by_barcode.dart';
 import 'package:sodiscan/domain/usecases/record_consumption.dart';
+import 'package:sodiscan/presentation/providers/manual_entry_draft.dart';
 import 'package:sodiscan/presentation/providers/product_lookup_notifier.dart';
 import 'package:sodiscan/presentation/screens/product_lookup/product_lookup_screen.dart';
 
@@ -16,7 +17,7 @@ void main() {
   late FakeProductRepository productRepository;
   late FakeConsumptionRepository consumptionRepository;
   late ProductLookupNotifier notifier;
-  bool? popResult;
+  LookupResult? popResult;
 
   setUp(() {
     productRepository = FakeProductRepository(product: indomieProduct);
@@ -35,7 +36,7 @@ void main() {
           builder: (context) => Scaffold(
             body: TextButton(
               onPressed: () async {
-                popResult = await Navigator.of(context).push<bool>(
+                popResult = await Navigator.of(context).push<LookupResult>(
                   MaterialPageRoute(
                     builder: (_) => ChangeNotifierProvider.value(value: notifier, child: const ProductLookupScreen()),
                   ),
@@ -135,7 +136,40 @@ void main() {
 
     await tester.tap(find.text('Input Manual'));
     await tester.pumpAndSettle();
-    expect(popResult, isFalse);
+    expect(popResult?.isSaved, isFalse);
+    expect(popResult?.manualEntry?.productName, 'Air Mineral 600 ml');
+    expect(popResult?.manualEntry?.barcode, '8991002101234');
+  });
+
+  testWidgets('Empty - produk tidak ditemukan membawa barcode tanpa nama ke Input Manual', (tester) async {
+    productRepository.product = null;
+    await pumpScreen(tester);
+
+    await searchBarcode(tester, '12345678');
+    await tester.pump();
+    await tester.tap(find.text('Input Manual'));
+    await tester.pumpAndSettle();
+
+    expect(popResult?.manualEntry?.productName, isNull);
+    expect(popResult?.manualEntry?.barcode, '12345678');
+  });
+
+  testWidgets('Error - saat offline tersedia tombol Input Manual selain Coba Lagi', (tester) async {
+    productRepository.failLookup = true;
+    await pumpScreen(tester);
+
+    await searchBarcode(tester, '089686010947');
+    await tester.pump();
+    expect(find.text('Terjadi Kesalahan'), findsOneWidget);
+    expect(find.text('Coba Lagi'), findsOneWidget);
+    expect(find.text('Input Manual'), findsOneWidget);
+
+    await tester.tap(find.text('Input Manual'));
+    await tester.pumpAndSettle();
+
+    expect(popResult?.isSaved, isFalse);
+    expect(popResult?.manualEntry?.productName, isNull);
+    expect(popResult?.manualEntry?.barcode, '089686010947');
   });
 
   testWidgets('Error + Retry - tombol Coba Lagi mencari ulang barcode yang sama', (tester) async {
@@ -224,7 +258,7 @@ void main() {
     expect(saved.sodiumMg, 1500);
     expect(saved.source, ConsumptionSource.scan);
     expect(saved.barcode, '089686010947');
-    expect(popResult, isTrue);
+    expect(popResult?.isSaved, isTrue);
     expect(find.text('Konsumsi berhasil disimpan.'), findsOneWidget);
   });
 

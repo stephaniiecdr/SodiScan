@@ -4,13 +4,17 @@ import 'package:provider/provider.dart';
 import '../../../domain/entities/food_consumption.dart';
 import '../../../domain/validation/consumption_rules.dart';
 import '../../providers/add_consumption_notifier.dart';
+import '../../providers/manual_entry_draft.dart';
 import '../../widgets/form_feedback.dart';
 import '../../widgets/keyboard_safe.dart';
 
 class ConsumptionForm extends StatefulWidget {
-  const ConsumptionForm({super.key, this.initial});
+  const ConsumptionForm({super.key, this.initial, this.draft});
 
   final FoodConsumption? initial;
+
+  /// Isian awal dari pencarian produk yang gagal (nama produk dan barcode).
+  final ManualEntryDraft? draft;
 
   @override
   State<ConsumptionForm> createState() => _ConsumptionFormState();
@@ -18,7 +22,8 @@ class ConsumptionForm extends StatefulWidget {
 
 class _ConsumptionFormState extends State<ConsumptionForm> {
   final _formKey = GlobalKey<FormState>();
-  late final _productNameController = TextEditingController(text: widget.initial?.productName);
+  late final _productNameController =
+      TextEditingController(text: widget.initial?.productName ?? widget.draft?.productName);
   late final _sodiumController = TextEditingController(text: widget.initial?.sodiumMg.round().toString());
   final _productNameFocus = FocusNode();
   final _sodiumFocus = FocusNode();
@@ -60,7 +65,7 @@ class _ConsumptionFormState extends State<ConsumptionForm> {
     final sodiumMg = parseSodiumMg(_sodiumController.text)!.toDouble();
     return _isEditing
         ? notifier.update(widget.initial!, productName: productName, sodiumMg: sodiumMg)
-        : notifier.submit(productName: productName, sodiumMg: sodiumMg);
+        : notifier.submit(productName: productName, sodiumMg: sodiumMg, barcode: widget.draft?.barcode);
   }
 
   Future<void> _onSaved() async {
